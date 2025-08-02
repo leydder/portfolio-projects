@@ -1,0 +1,27 @@
+[
+  {
+    "id": "94aa3704-9503-4d71-b49b-113e66315c7a",
+    "title": "tarea3",
+    "description": "tarea3",
+    "priority": "ALTA",
+    "status": "PENDIENTE",
+    "createdAt": "2025-08-01 12:00:38"
+  },
+  {
+    "id": "ff80877c-bd7c-4d15-8e1c-0d3c0881712b",
+    "title": "tarea1",
+    "description": "tarea1",
+    "priority": "MEDIA",
+    "status": "PENDIENTE",
+    "createdAt": "2025-08-01 10:13:16"
+  },
+  {
+    "id": "c8eb42cf-1a2f-430e-9654-ae14525b387b",
+    "title": "tarea3",
+    "description": "tarea3",
+    "priority": "BAJA",
+    "status": "COMPLETADA",
+    "createdAt": "2025-08-01 10:15:45",
+    "completedAt": "2025-08-01 10:15:58"
+  }
+]

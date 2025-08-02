@@ -1,0 +1,40 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Launch TaskManagerApp",
+            "request": "launch",
+            "mainClass": "com.taskmanager.TaskManagerApp",
+            "projectName": "task-manager",
+            "vmArgs": [
+                "--add-opens",
+                "java.base/java.lang=ALL-UNNAMED",
+                "--add-opens",
+                "java.base/java.util=ALL-UNNAMED",
+                "--add-opens",
+                "java.desktop/java.awt=ALL-UNNAMED",
+                "--add-opens",
+                "java.desktop/javax.swing=ALL-UNNAMED"
+            ]
+        },
+        {
+            "type": "java",
+            "name": "Debug TaskManagerApp",
+            "request": "launch",
+            "mainClass": "com.taskmanager.TaskManagerApp",
+            "projectName": "task-manager",
+            "vmArgs": [
+                "--add-opens",
+                "java.base/java.lang=ALL-UNNAMED",
+                "--add-opens",
+                "java.base/java.util=ALL-UNNAMED",
+                "--add-opens",
+                "java.desktop/java.awt=ALL-UNNAMED",
+                "--add-opens",
+                "java.desktop/javax.swing=ALL-UNNAMED"
+            ],
+            "console": "internalConsole"
+        }
+    ]
+}
