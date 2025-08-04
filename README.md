@@ -27,7 +27,7 @@ portfolio-projects/
 
 ### 🔹 **IA / Programación Inteligente**
 - [ia-program/proyecto1](ia-program/proyecto1) – Implementación de un modelo simple de Machine Learning.
-- [ia-program/proyecto2](ia-program/proyecto2) – Ejemplo de procesamiento de datos con Python.
+- [ia-program/proyecto2](ia-program/proyecto2) – Proyecto realizado con IA.
 
 ---
 
