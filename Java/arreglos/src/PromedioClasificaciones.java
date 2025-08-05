@@ -9,7 +9,7 @@ public class PromedioClasificaciones {
 
        // Creamos el arreglo
         var calificaciones =  new int [totalCalificaciones];
-        // solictar los valores de cada nota
+        // solicitar los valores de cada nota
 
         for (var i=0; i< totalCalificaciones ; i++) {
             System.out.print("Calificacion ["  + i + "] = ");
