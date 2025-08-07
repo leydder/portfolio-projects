@@ -24,7 +24,7 @@ public class PruebaVentas {
                     orden.mostrarOrden();
                     break;
                 case 3:
-                    System.out.println("¡Gracias por usar el Sistema de Ventas!");
+                    System.out.println("¡Gracias por usar este nuevo Sistema de Ventas!");
                     break;
                 default:
                     System.out.println("Opción inválida. Intente nuevamente.");
@@ -37,7 +37,7 @@ public class PruebaVentas {
 
     private static void mostrarMenu() {
         System.out.println("\n=== MENÚ PRINCIPAL ===");
-        System.out.println("1. Agregar producto");
+        System.out.println("1. Agregar el producto");
         System.out.println("2. Mostrar orden actual");
         System.out.println("3. Salir");
     }
