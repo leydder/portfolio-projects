@@ -14,7 +14,9 @@ public class ClienteDAO implements IClienteDAO {
     // Método centralizado para loguear errores
     private void logError(String mensaje, Exception e) {
         System.err.println("[ERROR] " + mensaje);
-        e.printStackTrace();
+        if (e != null) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -124,38 +126,4 @@ public class ClienteDAO implements IClienteDAO {
         return cliente;
     }
 
-    // Método main para pruebas rápidas
-    public static void main(String[] args) {
-        IClienteDAO clienteDao = new ClienteDAO();
-
-        // Agregar cliente
-        Cliente nuevo = new Cliente("Daniel", "Ortiz", 300);
-        if (clienteDao.agregarCliente(nuevo))
-            System.out.println("Cliente agregado: " + nuevo);
-        else
-            System.out.println("No se agregó el cliente: " + nuevo);
-
-        // Listar clientes
-        System.out.println("\n*** Lista de Clientes ***");
-        clienteDao.listarClientes().forEach(System.out::println);
-
-        // Buscar cliente por ID
-        Cliente buscado = new Cliente();
-        buscado.setId(1);
-        if (clienteDao.buscarClientePorId(buscado))
-            System.out.println("\nCliente encontrado: " + buscado);
-        else
-            System.out.println("\nNo se encontró el cliente con ID: " + buscado.getId());
-
-        // Modificar cliente
-        buscado.setNombre("Carlos");
-        buscado.setApellido("Ramírez");
-        buscado.setMembresia(500);
-        if (clienteDao.modificarCliente(buscado))
-            System.out.println("\nCliente modificado: " + buscado);
-
-        // Eliminar cliente
-        if (clienteDao.eliminarCliente(buscado))
-            System.out.println("\nCliente eliminado con ID: " + buscado.getId());
-    }
 }

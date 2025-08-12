@@ -7,7 +7,7 @@ import zona_fit.dominio.Cliente;
 import java.util.List;
 import java.util.Scanner;
 
-public class Zon1aFitApp {
+public class ZonaFitApp {
     private static final IClienteDAO clienteDAO = new ClienteDAO();
     private static final Scanner scanner = new Scanner(System.in);
 
@@ -57,7 +57,11 @@ public class Zon1aFitApp {
     
     private static int leerOpcion() {
         try {
-            int opcion = Integer.parseInt(scanner.nextLine().trim());
+            String input = scanner.nextLine().trim();
+            if (input.isEmpty()) {
+                return -1;
+            }
+            int opcion = Integer.parseInt(input);
             return opcion;
         } catch (NumberFormatException e) {
             return -1; // Opción inválida
@@ -98,6 +102,11 @@ public class Zon1aFitApp {
                 return;
             }
             
+            if (nombre.length() > 50) {
+                System.out.println("❌ El nombre no puede tener más de 50 caracteres.");
+                return;
+            }
+            
             System.out.print("Ingrese el apellido: ");
             String apellido = scanner.nextLine().trim();
             
@@ -106,11 +115,21 @@ public class Zon1aFitApp {
                 return;
             }
             
+            if (apellido.length() > 50) {
+                System.out.println("❌ El apellido no puede tener más de 50 caracteres.");
+                return;
+            }
+            
             System.out.print("Ingrese el valor de la membresía: $");
             int membresia = Integer.parseInt(scanner.nextLine().trim());
             
             if (membresia <= 0) {
                 System.out.println("❌ El valor de la membresía debe ser mayor a 0.");
+                return;
+            }
+            
+            if (membresia > 999999) {
+                System.out.println("❌ El valor de la membresía no puede ser mayor a $999,999.");
                 return;
             }
             
@@ -154,12 +173,20 @@ public class Zon1aFitApp {
             System.out.print("Nuevo nombre (Enter para mantener actual): ");
             String nuevoNombre = scanner.nextLine().trim();
             if (!nuevoNombre.isEmpty()) {
+                if (nuevoNombre.length() > 50) {
+                    System.out.println("❌ El nombre no puede tener más de 50 caracteres.");
+                    return;
+                }
                 cliente.setNombre(nuevoNombre);
             }
             
             System.out.print("Nuevo apellido (Enter para mantener actual): ");
             String nuevoApellido = scanner.nextLine().trim();
             if (!nuevoApellido.isEmpty()) {
+                if (nuevoApellido.length() > 50) {
+                    System.out.println("❌ El apellido no puede tener más de 50 caracteres.");
+                    return;
+                }
                 cliente.setApellido(nuevoApellido);
             }
             
@@ -169,6 +196,10 @@ public class Zon1aFitApp {
                 int nuevaMembresia = Integer.parseInt(nuevaMembresiaStr);
                 if (nuevaMembresia <= 0) {
                     System.out.println("❌ El valor de la membresía debe ser mayor a 0.");
+                    return;
+                }
+                if (nuevaMembresia > 999999) {
+                    System.out.println("❌ El valor de la membresía no puede ser mayor a $999,999.");
                     return;
                 }
                 cliente.setMembresia(nuevaMembresia);

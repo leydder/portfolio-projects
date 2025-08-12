@@ -3,24 +3,24 @@ package zona_fit.dominio;
 import java.util.Objects;
 
 public class Cliente {
-    private  int id;
-    private  String nombre;
-    private  String apellido;
-    private  int membresia;
+    private int id;
+    private String nombre;
+    private String apellido;
+    private int membresia;
 
-    public  Cliente(){}
+    public Cliente() {}
 
-    public Cliente(int id){
+    public Cliente(int id) {
         this.id = id;
     }
 
-    public  Cliente(String nombre, String apellido, int membresia){
+    public Cliente(String nombre, String apellido, int membresia) {
         this.nombre = nombre;
         this.apellido = apellido;
-        this.membresia =  membresia;
+        this.membresia = membresia;
     }
 
-    public  Cliente(int id, String nombre, String apellido, int membresia){
+    public Cliente(int id, String nombre, String apellido, int membresia) {
         this(nombre, apellido, membresia);
         this.id = id;
     }
@@ -71,11 +71,11 @@ public class Cliente {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Cliente cliente = (Cliente) o;
-        return id == cliente.id && membresia == cliente.membresia && Objects.equals(nombre, cliente.nombre) && Objects.equals(apellido, cliente.apellido);
+        return id == cliente.id && Objects.equals(nombre, cliente.nombre) && Objects.equals(apellido, cliente.apellido);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, nombre, apellido, membresia);
+        return Objects.hash(id, nombre, apellido);
     }
 }
