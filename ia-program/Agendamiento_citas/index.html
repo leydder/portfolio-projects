@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Agenda Citas">
+    <title>Sistema de Agendamiento de Citas</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1><i class="fas fa-calendar-alt"></i> Sistema de Agendamiento</h1>
+            <p>Gestiona tus citas de manera eficiente</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Selección de fecha -->
+            <div class="date-selector">
+                <label for="appointment-date">Selecciona una fecha:</label>
+                <input type="date" id="appointment-date" required>
+                <button id="load-appointments" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Cargar Citas
+                </button>
+            </div>
+
+            <!-- Formulario para nueva cita -->
+            <div class="appointment-form">
+                <h3><i class="fas fa-plus-circle"></i> Nueva Cita</h3>
+                <form id="new-appointment-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="appointment-time">Hora:</label>
+                            <input type="time" id="appointment-time" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="appointment-name">Nombre del Cliente:</label>
+                            <input type="text" id="appointment-name" placeholder="Ingresa el nombre" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="appointment-phone">Teléfono:</label>
+                        <input type="tel" id="appointment-phone" placeholder="Ingresa el teléfono" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="appointment-notes">Notas:</label>
+                        <textarea id="appointment-notes" placeholder="Notas adicionales (opcional)"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> <span class="btn-text">Guardar Cita</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Lista de citas -->
+            <div class="appointments-list">
+                <h3><i class="fas fa-list"></i> Citas del Día</h3>
+                <div id="appointments-container">
+                    <p class="no-appointments">No hay citas programadas para esta fecha</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal para editar/reprogramar cita -->
+        <div id="edit-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h3><i class="fas fa-edit"></i> Editar Cita</h3>
+                <form id="edit-appointment-form">
+                    <input type="hidden" id="edit-appointment-id">
+                    <div class="form-group">
+                        <label for="edit-appointment-date">Fecha:</label>
+                        <input type="date" id="edit-appointment-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-appointment-time">Hora:</label>
+                        <input type="time" id="edit-appointment-time" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-appointment-name">Nombre del Cliente:</label>
+                        <input type="text" id="edit-appointment-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-appointment-phone">Teléfono:</label>
+                        <input type="tel" id="edit-appointment-phone" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-appointment-notes">Notas:</label>
+                        <textarea id="edit-appointment-notes"></textarea>
+                    </div>
+                    <div class="modal-buttons">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Guardar Cambios
+                        </button>
+                        <button type="button" id="delete-appointment" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Eliminar Cita
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 

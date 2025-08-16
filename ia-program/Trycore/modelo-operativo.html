@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caso Banca: Automatización del Proceso de Conciliación Bancaria - Challenge PM</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="subpage-styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="back-button">
+                    <i class="fas fa-arrow-left"></i>
+                    Volver al Home
+                </a>
+                <h1 class="page-title">
+                    <i class="fas fa-university"></i>
+                    Caso Banca: Automatización del Proceso de Conciliación Bancaria
+                </h1>
+                <p class="page-subtitle">RPA + IA para Optimización de Procesos Financieros</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <!-- Contexto del Cliente -->
+            <section class="content-section">
+                <div class="section-header">
+                    <i class="fas fa-info-circle"></i>
+                    <h2>Contexto del Cliente</h2>
+                </div>
+                <div class="content-card">
+                    <p>Entidad financiera con operaciones en varios países que necesita optimizar su proceso de conciliación de transacciones entre sus sistemas internos y registros externos.</p>
+                </div>
+            </section>
+
+            <!-- Situación Actual -->
+            <section class="content-section">
+                <div class="section-header">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h2>Situación Actual</h2>
+                </div>
+                <div class="metrics-grid">
+                    <div class="metric-card current">
+                        <div class="metric-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="metric-content">
+                            <h3>8 horas diarias</h3>
+                            <p>de trabajo manual por analista</p>
+                        </div>
+                    </div>
+                    <div class="metric-card current">
+                        <div class="metric-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="metric-content">
+                            <h3>6 analistas</h3>
+                            <p>dedicados exclusivamente a esta tarea</p>
+                        </div>
+                    </div>
+                    <div class="metric-card current">
+                        <div class="metric-icon">
+                            <i class="fas fa-times-circle"></i>
+                        </div>
+                        <div class="metric-content">
+                            <h3>15% de errores</h3>
+                            <p>detectados tardíamente, generando reprocesos</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Objetivos del Proyecto -->
+            <section class="content-section">
+                <div class="section-header">
+                    <i class="fas fa-bullseye"></i>
+                    <h2>Objetivos del Proyecto</h2>
+                </div>
+                <div class="objectives-grid">
+                    <div class="objective-card">
+                        <div class="objective-icon">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <h3>Automatizar el 85% del proceso</h3>
+                    </div>
+                    <div class="objective-card">
+                        <div class="objective-icon">
+                            <i class="fas fa-tachometer-alt"></i>
+                        </div>
+                        <h3>Reducir tiempo de ejecución de 8h → 45 min</h3>
+                    </div>
+                    <div class="objective-card">
+                        <div class="objective-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <h3>Disminuir errores al &lt;2%</h3>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Modelo Operativo Aplicado -->
+            <section class="content-section">
+                <div class="section-header">
+                    <i class="fas fa-cogs"></i>
+                    <h2>Modelo Operativo Aplicado</h2>
+                    <p class="section-subtitle">Híbrido PMI + Agile at Scale</p>
+                </div>
+
+                <!-- Fase 1 -->
+                <div class="phase-card">
+                    <div class="phase-header">
+                        <div class="phase-number">1</div>
+                        <h3>Preventa & Discovery</h3>
+                    </div>
+                    <div class="phase-content">
+                        <div class="actions-section">
+                            <h4>Acciones:</h4>
+                            <ul>
+                                <li>Reuniones con stakeholders para levantar requisitos y entender reglas de negocio.</li>
+                                <li>Mapeo del proceso actual y análisis de puntos de ineficiencia.</li>
+                                <li>Estimación de ROI: ahorro anual proyectado en horas hombre.</li>
+                                <li>Registro del proyecto en Operator con alcance preliminar, equipo tentativo y riesgos iniciales.</li>
+                            </ul>
+                        </div>
+                        <div class="considerations-section">
+                            <h4>Consideraciones clave:</h4>
+                            <ul>
+                                <li>Cumplir normativas locales e internacionales.</li>
+                                <li>Validar accesos e integraciones con sistemas existentes.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fase 2 -->
+                <div class="phase-card">
+                    <div class="phase-header">
+                        <div class="phase-number">2</div>
+                        <h3>Planificación</h3>
+                    </div>
+                    <div class="phase-content">
+                        <div class="actions-section">
+                            <h4>Acciones:</h4>
+                            <ul>
+                                <li>Creación del WBS con módulos: extracción de datos, comparación, clasificación, reportes y alertas.</li>
+                                <li>Plan de capacidad con PMO para programar recursos en Operator.</li>
+                                <li>Plan de riesgos: disponibilidad de sistemas, variaciones en formatos de archivo, resistencia al cambio.</li>
+                                <li>Plan de comunicación: reportes semanales y demostraciones periódicas al cliente.</li>
+                            </ul>
+                        </div>
+                        <div class="considerations-section">
+                            <h4>Consideraciones clave:</h4>
+                            <ul>
+                                <li>Reutilizar componentes existentes en la fábrica de software.</li>
+                                <li>Asignar un Solution Architect y un RPA Lead.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fase 3 -->
+                <div class="phase-card">
+                    <div class="phase-header">
+                        <div class="phase-number">3</div>
+                        <h3>Ejecución Industrializada</h3>
+                    </div>
+                    <div class="phase-content">
+                        <div class="actions-section">
+                            <h4>Acciones:</h4>
+                            <ul>
+                                <li>Desarrollo en sprints de 2 semanas con backlog priorizado.</li>
+                                <li>Entrenamiento del modelo de IA para clasificación y priorización de excepciones.</li>
+                                <li>Pruebas automatizadas y seguimiento de KPIs en tiempo real con Operator.</li>
+                            </ul>
+                        </div>
+                        <div class="considerations-section">
+                            <h4>Consideraciones clave:</h4>
+                            <ul>
+                                <li>Documentación de decisiones en Gemini.</li>
+                                <li>Uso de GitHub para control de versiones y revisiones por pares.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fase 4 -->
+                <div class="phase-card">
+                    <div class="phase-header">
+                        <div class="phase-number">4</div>
+                        <h3>Entrega y UAT</h3>
+                    </div>
+                    <div class="phase-content">
+                        <div class="actions-section">
+                            <h4>Acciones:</h4>
+                            <ul>
+                                <li>Implementación en entorno de pruebas.</li>
+                                <li>Capacitación de usuarios finales.</li>
+                                <li>Validación con checklist de calidad Trycore antes del despliegue productivo.</li>
+                            </ul>
+                        </div>
+                        <div class="considerations-section">
+                            <h4>Consideraciones clave:</h4>
+                            <ul>
+                                <li>Plan de reversibilidad en caso de rollback.</li>
+                                <li>Medición inicial de métricas de éxito.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fase 5 -->
+                <div class="phase-card">
+                    <div class="phase-header">
+                        <div class="phase-number">5</div>
+                        <h3>Post-Garantía y Soporte</h3>
+                    </div>
+                    <div class="phase-content">
+                        <div class="actions-section">
+                            <h4>Acciones:</h4>
+                            <ul>
+                                <li>Monitoreo continuo de bots y del modelo IA.</li>
+                                <li>Ajuste de reglas y retraining según resultados.</li>
+                                <li>Documentación de lecciones aprendidas en la Wiki.</li>
+                            </ul>
+                        </div>
+                        <div class="considerations-section">
+                            <h4>Consideraciones clave:</h4>
+                            <ul>
+                                <li>Plan de soporte evolutivo para adaptarse a cambios en formatos o regulaciones.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- KPIs Clave -->
+            <section class="content-section">
+                <div class="section-header">
+                    <i class="fas fa-chart-line"></i>
+                    <h2>KPIs Clave</h2>
+                </div>
+                
+                <div class="kpis-section">
+                    <h3>Before/After:</h3>
+                    <div class="kpis-grid">
+                        <div class="kpi-card before-after">
+                            <div class="kpi-header">
+                                <i class="fas fa-clock"></i>
+                                <h4>Tiempo de ejecución</h4>
+                            </div>
+                            <div class="kpi-values">
+                                <span class="before">8h</span>
+                                <i class="fas fa-arrow-right"></i>
+                                <span class="after">45min</span>
+                            </div>
+                        </div>
+                        <div class="kpi-card before-after">
+                            <div class="kpi-header">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <h4>Errores en producción</h4>
+                            </div>
+                            <div class="kpi-values">
+                                <span class="before">15%</span>
+                                <i class="fas fa-arrow-right"></i>
+                                <span class="after">&lt;2%</span>
+                            </div>
+                        </div>
+                        <div class="kpi-card before-after">
+                            <div class="kpi-header">
+                                <i class="fas fa-users"></i>
+                                <h4>Horas hombre liberadas</h4>
+                            </div>
+                            <div class="kpi-values">
+                                <span class="before">-</span>
+                                <i class="fas fa-arrow-right"></i>
+                                <span class="after">+10.000/año</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kpis-section">
+                    <h3>En operación:</h3>
+                    <div class="kpis-grid">
+                        <div class="kpi-card operational">
+                            <div class="kpi-header">
+                                <i class="fas fa-robot"></i>
+                                <h4>% automatización efectiva</h4>
+                            </div>
+                            <div class="kpi-value">&gt;85%</div>
+                        </div>
+                        <div class="kpi-card operational">
+                            <div class="kpi-header">
+                                <i class="fas fa-check-circle"></i>
+                                <h4>Cumplimiento de SLA</h4>
+                            </div>
+                            <div class="kpi-value">&gt;99%</div>
+                        </div>
+                        <div class="kpi-card operational">
+                            <div class="kpi-header">
+                                <i class="fas fa-star"></i>
+                                <h4>NPS del cliente interno</h4>
+                            </div>
+                            <div class="kpi-value">&gt;8/10</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Challenge Técnico PM. Caso de Estudio: Automatización Bancaria con RPA + IA.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html> 

@@ -1,0 +1,47 @@
+[
+  {
+    "id": "ejemplo001",
+    "date": "2024-01-15",
+    "time": "09:00",
+    "name": "María González",
+    "phone": "+34612345678",
+    "notes": "Primera consulta, cliente nuevo",
+    "createdAt": "2024-01-14T10:00:00.000Z"
+  },
+  {
+    "id": "ejemplo002",
+    "date": "2024-01-15",
+    "time": "10:30",
+    "name": "Carlos Rodríguez",
+    "phone": "+34687654321",
+    "notes": "Consulta de seguimiento",
+    "createdAt": "2024-01-14T11:30:00.000Z"
+  },
+  {
+    "id": "ejemplo003",
+    "date": "2024-01-15",
+    "time": "14:00",
+    "name": "Ana Martínez",
+    "phone": "+34987654321",
+    "notes": "Cliente preferencial, requiere atención especial",
+    "createdAt": "2024-01-14T15:00:00.000Z"
+  },
+  {
+    "id": "ejemplo004",
+    "date": "2024-01-16",
+    "time": "08:00",
+    "name": "Luis Fernández",
+    "phone": "+34123456789",
+    "notes": "",
+    "createdAt": "2024-01-14T16:00:00.000Z"
+  },
+  {
+    "id": "ejemplo005",
+    "date": "2024-01-16",
+    "time": "11:00",
+    "name": "Sofia Jiménez",
+    "phone": "+34987654321",
+    "notes": "Consulta urgente",
+    "createdAt": "2024-01-14T17:00:00.000Z"
+  }
+] 

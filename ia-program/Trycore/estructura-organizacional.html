@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplicación de la Propuesta - Estructura Organizacional - Challenge PM</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="subpage-styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="back-button">
+                    <i class="fas fa-arrow-left"></i>
+                    Volver al Home
+                </a>
+                <h1 class="page-title">
+                    <i class="fas fa-sitemap"></i>
+                    Aplicación de la Propuesta
+                </h1>
+                <p class="page-subtitle">Estructura Organizacional Detallada y Modelo de Ejecución</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <!-- Escenario -->
+            <section class="content-section">
+                <div class="section-header">
+                    <i class="fas fa-project-diagram"></i>
+                    <h2>Escenario</h2>
+                </div>
+                <div class="content-card">
+                    <p>Proyecto de automatización de conciliación bancaria con RPA + IA.</p>
+                </div>
+            </section>
+
+            <!-- Estructura Organizacional -->
+            <section class="content-section">
+                <div class="section-header">
+                    <i class="fas fa-users-cog"></i>
+                    <h2>Estructura Organizacional</h2>
+                </div>
+                
+                <div class="org-structure">
+                    <!-- Nivel 1: Director de Operaciones -->
+                    <div class="org-level level-1">
+                        <div class="org-card director">
+                            <div class="org-icon">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                            <div class="org-content">
+                                <h3>Director de Operaciones</h3>
+                                <p>Supervisa cumplimiento de alcance, tiempos y KPIs estratégicos del proyecto.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Nivel 2: PMO y Delivery Lead -->
+                    <div class="org-level level-2">
+                        <div class="org-card pmo">
+                            <div class="org-icon">
+                                <i class="fas fa-tasks"></i>
+                            </div>
+                            <div class="org-content">
+                                <h3>PMO</h3>
+                                <p>Crea plantillas de levantamiento de procesos de conciliación y checklist de QA; carga todo en la Wiki y en Operator.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="org-card delivery-lead">
+                            <div class="org-icon">
+                                <i class="fas fa-handshake"></i>
+                            </div>
+                            <div class="org-content">
+                                <h3>Delivery Lead RPA+IA</h3>
+                                <p>Coordina arquitecto RPA, desarrolladores y analistas funcionales.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Nivel 3: Roles Técnicos y Funcionales -->
+                    <div class="org-level level-3">
+                        <div class="org-card architect">
+                            <div class="org-icon">
+                                <i class="fas fa-drafting-compass"></i>
+                            </div>
+                            <div class="org-content">
+                                <h3>Arquitecto de Solución</h3>
+                                <p>Diseña arquitectura de bots + IA y asegura escalabilidad.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="org-card analyst">
+                            <div class="org-icon">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <div class="org-content">
+                                <h3>Analista Funcional</h3>
+                                <p>Mapea el flujo de conciliación y define reglas de negocio.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="org-card pm">
+                            <div class="org-icon">
+                                <i class="fas fa-user-cog"></i>
+                            </div>
+                            <div class="org-content">
+                                <h3>Project Manager</h3>
+                                <p>Coordina sprints, controla riesgos y gestiona la relación con el cliente.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Nivel 4: Roles de Implementación -->
+                    <div class="org-level level-4">
+                        <div class="org-card tech-lead">
+                            <div class="org-icon">
+                                <i class="fas fa-code"></i>
+                            </div>
+                            <div class="org-content">
+                                <h3>Tech Lead RPA</h3>
+                                <p>Supervisa desarrollo de bots en UiPath/Automation Anywhere.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="org-card qa-lead">
+                            <div class="org-icon">
+                                <i class="fas fa-vial"></i>
+                            </div>
+                            <div class="org-content">
+                                <h3>QA Lead</h3>
+                                <p>Define pruebas automáticas y manuales para validar exactitud de conciliaciones.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Modelo de Ejecución -->
+            <section class="content-section">
+                <div class="section-header">
+                    <i class="fas fa-play-circle"></i>
+                    <h2>Modelo de Ejecución Aplicado</h2>
+                </div>
+
+                <!-- Inicio -->
+                <div class="execution-phase">
+                    <div class="phase-header">
+                        <div class="phase-icon">
+                            <i class="fas fa-flag-checkered"></i>
+                        </div>
+                        <h3>Inicio</h3>
+                    </div>
+                    <div class="phase-content">
+                        <ul>
+                            <li>Kick-off con todas las partes.</li>
+                            <li>Proyecto registrado en Operator con milestones: Discovery, Desarrollo, Pruebas, UAT, Go-Live.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Sprints -->
+                <div class="execution-phase">
+                    <div class="phase-header">
+                        <div class="phase-icon">
+                            <i class="fas fa-sync-alt"></i>
+                        </div>
+                        <h3>Sprints</h3>
+                    </div>
+                    <div class="sprints-grid">
+                        <div class="sprint-card">
+                            <div class="sprint-number">1</div>
+                            <h4>Sprint 1</h4>
+                            <p>Extracción automática de datos y comparación de primeras reglas.</p>
+                        </div>
+                        <div class="sprint-card">
+                            <div class="sprint-number">2</div>
+                            <h4>Sprint 2</h4>
+                            <p>Clasificación IA de discrepancias.</p>
+                        </div>
+                        <div class="sprint-card">
+                            <div class="sprint-number">3</div>
+                            <h4>Sprint 3</h4>
+                            <p>Integración con dashboard y alertas automáticas.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seguimiento y Control -->
+                <div class="execution-phase">
+                    <div class="phase-header">
+                        <div class="phase-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3>Seguimiento y Control</h3>
+                    </div>
+                    <div class="control-grid">
+                        <div class="control-card">
+                            <div class="control-icon">
+                                <i class="fas fa-calendar-week"></i>
+                            </div>
+                            <h4>Revisión Semanal</h4>
+                            <p>Revisión semanal de KPIs en Operator.</p>
+                        </div>
+                        <div class="control-card">
+                            <div class="control-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <h4>Comité Mensual</h4>
+                            <p>Comité mensual con C-Level para mostrar avance y ROI preliminar.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- KPIs Específicos del Caso -->
+            <section class="content-section">
+                <div class="section-header">
+                    <i class="fas fa-chart-bar"></i>
+                    <h2>KPIs Específicos del Caso</h2>
+                </div>
+                
+                <div class="case-kpis-grid">
+                    <div class="case-kpi-card">
+                        <div class="kpi-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="kpi-content">
+                            <h3>Tiempo de conciliación</h3>
+                            <div class="kpi-value">8h → 45min</div>
+                        </div>
+                    </div>
+                    
+                    <div class="case-kpi-card">
+                        <div class="kpi-icon">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="kpi-content">
+                            <h3>% automatización efectiva</h3>
+                            <div class="kpi-value">Objetivo ≥85%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="case-kpi-card">
+                        <div class="kpi-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="kpi-content">
+                            <h3>Defectos detectados en producción</h3>
+                            <div class="kpi-value">&lt;2%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="case-kpi-card">
+                        <div class="kpi-icon">
+                            <i class="fas fa-hourglass-half"></i>
+                        </div>
+                        <div class="kpi-content">
+                            <h3>Ahorro de horas hombre</h3>
+                            <div class="kpi-value">+10.000 anuales</div>
+                        </div>
+                    </div>
+                    
+                    <div class="case-kpi-card">
+                        <div class="kpi-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="kpi-content">
+                            <h3>NPS del cliente interno</h3>
+                            <div class="kpi-value">≥8/10</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Challenge Técnico PM. Estructura Organizacional y Modelo de Ejecución.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html> 
