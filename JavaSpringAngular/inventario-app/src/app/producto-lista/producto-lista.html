@@ -1,0 +1,102 @@
+<div class="container">
+  <div class="container text-center" style="margin: 30px;">
+    <h3>Sistema de Inventarios</h3>
+  </div>
+
+  <!-- Mensajes de error y carga -->
+  <div *ngIf="error" class="alert alert-danger" role="alert">
+    {{ error }}
+    <button type="button" class="btn-close" (click)="error = ''"></button>
+  </div>
+
+  <div *ngIf="cargando" class="text-center my-3">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+    <p class="mt-2">Cargando productos...</p>
+  </div>
+
+  <!-- Botón para agregar nuevo producto -->
+  <div class="mb-3">
+    <button class="btn btn-primary" (click)="nuevoProducto()" [disabled]="cargando">
+      <i class="bi bi-plus-circle"></i> Nuevo Producto
+    </button>
+  </div>
+
+  <!-- Formulario para agregar/editar productos -->
+  <div *ngIf="showForm" class="card mb-4">
+    <div class="card-header">
+      <h5>{{ modoEdicion ? 'Editar Producto' : 'Agregar Nuevo Producto' }}</h5>
+    </div>
+    <div class="card-body">
+      <form (ngSubmit)="guardarProducto()">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="descripcion" class="form-label">Descripción</label>
+            <input type="text" class="form-control" id="descripcion" 
+                   [(ngModel)]="productoSeleccionado.descripcion" name="descripcion" required>
+          </div>
+          <div class="col-md-3 mb-3">
+            <label for="precio" class="form-label">Precio</label>
+            <input type="number" class="form-control" id="precio" step="0.01" min="0"
+                   [(ngModel)]="productoSeleccionado.precio" name="precio" required>
+          </div>
+          <div class="col-md-3 mb-3">
+            <label for="existencia" class="form-label">Existencia</label>
+            <input type="number" class="form-control" id="existencia" min="0"
+                   [(ngModel)]="productoSeleccionado.existencia" name="existencia" required>
+          </div>
+        </div>
+        <div class="btn-group">
+          <button type="submit" class="btn btn-success" [disabled]="cargando">
+            <i class="bi bi-save"></i> {{ modoEdicion ? 'Actualizar' : 'Guardar' }}
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="cancelarForm()">
+            <i class="bi bi-x-circle"></i> Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Tabla de productos -->
+  <div class="table-responsive">
+    <table class="table table-striped table-hover align-middle" *ngIf="!cargando && productos.length > 0">
+      <thead class="table-dark">
+        <tr>
+          <th scope="col">ID</th>
+          <th scope="col">Descripción del Producto</th>
+          <th scope="col">Precio</th>
+          <th scope="col">Existencias</th>
+          <th scope="col">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let producto of productos">
+          <th scope="row">{{ producto.idProducto }}</th>
+          <td>{{ producto.descripcion }}</td>
+          <td>${{ producto.precio | number:'1.2-2' }}</td>
+          <td>{{ producto.existencia }}</td>
+          <td>
+            <div class="btn-group btn-group-sm" role="group">
+              <button class="btn btn-outline-primary" (click)="editarProducto(producto)" [disabled]="cargando" title="Editar">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button class="btn btn-outline-danger" (click)="eliminarProducto(producto.idProducto)" [disabled]="cargando" title="Eliminar">
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Mensaje cuando no hay productos -->
+    <div *ngIf="!cargando && productos.length === 0" class="text-center py-4">
+      <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i>
+        No hay productos registrados. Haga clic en "Nuevo Producto" para agregar uno.
+      </div>
+    </div>
+  </div>
+</div>
