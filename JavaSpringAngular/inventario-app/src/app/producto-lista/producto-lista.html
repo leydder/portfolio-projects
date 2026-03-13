@@ -82,7 +82,7 @@
               <button class="btn btn-outline-primary" (click)="editarProducto(producto)" [disabled]="cargando" title="Editar">
                 <i class="bi bi-pencil"></i>
               </button>
-              <button class="btn btn-outline-danger" (click)="eliminarProducto(producto.idProducto)" [disabled]="cargando" title="Eliminar">
+              <button class="btn btn-outline-danger" (click)="eliminarProducto(producto.idProducto!)" [disabled]="cargando" title="Eliminar">
                 <i class="bi bi-trash"></i>
               </button>
             </div>
