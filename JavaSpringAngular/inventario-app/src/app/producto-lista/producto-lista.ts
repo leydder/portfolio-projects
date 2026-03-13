@@ -13,12 +13,36 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./producto-lista.css']
 })
 export class ProductoLista implements OnInit {
+  readonly Math = Math;
   productos: Producto[] = [];
   cargando: boolean = false;
   error: string = '';
   productoSeleccionado: Producto = new Producto();
   modoEdicion: boolean = false;
   showForm: boolean = false;
+
+  // Paginacion
+  paginaActual: number = 1;
+  productosPorPagina: number = 5;
+
+  get totalPaginas(): number {
+    return Math.ceil(this.productos.length / this.productosPorPagina);
+  }
+
+  get productosPaginados(): Producto[] {
+    const inicio = (this.paginaActual - 1) * this.productosPorPagina;
+    return this.productos.slice(inicio, inicio + this.productosPorPagina);
+  }
+
+  get paginas(): number[] {
+    return Array.from({ length: this.totalPaginas }, (_, i) => i + 1);
+  }
+
+  cambiarPagina(pagina: number): void {
+    if (pagina >= 1 && pagina <= this.totalPaginas) {
+      this.paginaActual = pagina;
+    }
+  }
 
   constructor(private productoService: ProductoService) { }
 
@@ -33,6 +57,7 @@ export class ProductoLista implements OnInit {
     this.productoService.obtenerProductosLista().subscribe({
       next: (datos) => {
         this.productos = datos;
+        this.paginaActual = 1;
         this.cargando = false;
       },
       error: (err) => {

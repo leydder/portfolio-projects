@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -29,7 +30,7 @@ public class ProductoControlador {
     }
 
     @PostMapping("/productos")
-    public Producto agregarProducto(@RequestBody Producto producto){
+    public Producto agregarProducto(@Valid @RequestBody Producto producto){
         logger.info("Producto a agregar: " + producto);
         return this.productoServicio.guardarProducto(producto);
     }
@@ -45,7 +46,7 @@ public class ProductoControlador {
     }
 
     @PutMapping("/productos/{id}")
-    public ResponseEntity<Producto> actualizarProducto(@PathVariable Integer id, @RequestBody Producto producto){
+    public ResponseEntity<Producto> actualizarProducto(@PathVariable Integer id, @Valid @RequestBody Producto producto){
         Producto productoExistente = this.productoServicio.buscarProductoPorId(id);
         if(productoExistente != null){
             producto.setIdProducto(id);
