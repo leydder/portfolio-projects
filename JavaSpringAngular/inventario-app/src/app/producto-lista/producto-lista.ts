@@ -88,7 +88,7 @@ export class ProductoLista implements OnInit {
     this.cargando = true;
     
     if (this.modoEdicion) {
-      this.productoService.editarProducto(this.productoSeleccionado.idProducto, this.productoSeleccionado).subscribe({
+      this.productoService.editarProducto(this.productoSeleccionado.idProducto!, this.productoSeleccionado).subscribe({
         next: () => {
           this.cargarProductos();
           this.cancelarForm();
