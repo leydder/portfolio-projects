@@ -1,70 +1,90 @@
-# Getting Started with Create React App
+# Human Resources App - React
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Frontend de la aplicación de gestión de recursos humanos construido con React y Bootstrap.
 
-## Available Scripts
+## Tech Stack
 
-In the project directory, you can run:
+- React 19
+- Bootstrap 5
+- Axios
+- Jest + React Testing Library
 
-### `npm start`
+## Requisitos previos
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- Node.js v18+
+- npm
+- Backend `human-resources-spring` corriendo en `http://localhost:8080`
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Instalación
 
-### `npm test`
+```bash
+npm install
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Ejecutar el proyecto
 
-### `npm run build`
+```bash
+npm start
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+La app abre en `http://localhost:3000`.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Ejecutar los tests
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```bash
+npm test
+```
 
-### `npm run eject`
+19 tests — 0 fallos.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Estructura del proyecto
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```
+src/
+├── components/
+│   ├── EmployeeList.js        # Tabla con todos los empleados
+│   ├── EmployeeList.test.js
+│   ├── EmployeeForm.js        # Formulario para crear empleado
+│   ├── EmployeeForm.test.js
+│   ├── EmployeeEdit.js        # Formulario para editar empleado
+│   └── EmployeeEdit.test.js
+├── services/
+│   └── EmployeeService.js     # Llamadas HTTP al backend
+├── App.js                     # Componente raíz
+└── index.js                   # Punto de entrada
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## Funcionalidades
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+| Acción | Descripción |
+|--------|-------------|
+| Listar | Muestra todos los empleados en una tabla |
+| Crear | Formulario para agregar un nuevo empleado |
+| Editar | Formulario precargado con los datos del empleado |
+| Eliminar | Botón que elimina el empleado y recarga la tabla |
 
-## Learn More
+## Conexión con el backend
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Todas las peticiones HTTP se hacen a través de `EmployeeService.js`:
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```
+GET    http://localhost:8080/rh-app/employee
+GET    http://localhost:8080/rh-app/employee/{id}
+POST   http://localhost:8080/rh-app/employee
+PUT    http://localhost:8080/rh-app/employee/{id}
+DELETE http://localhost:8080/rh-app/employee/{id}
+```
 
-### Code Splitting
+## Levantar el proyecto completo
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+1. Iniciar el backend:
+```bash
+cd human-resources-spring
+./mvnw spring-boot:run
+```
 
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+2. Iniciar el frontend:
+```bash
+cd human-resources-react
+npm start
+```
