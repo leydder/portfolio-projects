@@ -120,19 +120,34 @@ class ProductServiceTest {
     // --- deleteProductById ---
 
     @Test
-    void deleteProductById_deletesCorrectly() {
+    void deleteProductById_deletesCorrectly_whenExists() {
+        Product product = new Product(1, "Laptop", 1200.0, 10);
+        when(productRepository.findById(1)).thenReturn(Optional.of(product));
         doNothing().when(productRepository).deleteById(1);
 
         productoService.deleteProductById(1);
 
+        verify(productRepository).findById(1);
         verify(productRepository).deleteById(1);
     }
 
     @Test
-    void deleteProductById_withNullId_throwsException() {
-        doThrow(IllegalArgumentException.class).when(productRepository).deleteById(null);
+    void deleteProductById_throwsException_whenNotFound() {
+        when(productRepository.findById(99)).thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(ProductNotFoundException.class,
+                () -> productoService.deleteProductById(99));
+
+        verify(productRepository, never()).deleteById(99);
+    }
+
+    @Test
+    void deleteProductById_withNullId_throwsException() {
+        when(productRepository.findById(null)).thenReturn(Optional.empty());
+
+        assertThrows(ProductNotFoundException.class,
                 () -> productoService.deleteProductById(null));
+
+        verify(productRepository, never()).deleteById(null);
     }
 }

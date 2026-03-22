@@ -1,17 +1,19 @@
 package leydder.com.inventory.service;
 
+import leydder.com.inventory.exception.ProductNotFoundException;
 import leydder.com.inventory.model.Product;
 import leydder.com.inventory.repository.ProductRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import leydder.com.inventory.exception.ProductNotFoundException;
 
 import java.util.List;
+
 @Service
+@RequiredArgsConstructor
 public class ProductoService implements IProductService {
 
-    @Autowired
-    private ProductRepository productRepository;
+    private final ProductRepository productRepository;
+
     @Override
     public List<Product> showProducts() {
         return this.productRepository.findAll();
@@ -25,11 +27,12 @@ public class ProductoService implements IProductService {
 
     @Override
     public void saveProduct(Product product) {
-    this.productRepository.save(product);
+        this.productRepository.save(product);
     }
 
     @Override
     public void deleteProductById(Integer productId) {
+        searchProductById(productId);
         this.productRepository.deleteById(productId);
     }
 }

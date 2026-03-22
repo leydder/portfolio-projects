@@ -2,7 +2,7 @@ package leydder.com.inventory.controller;
 
 import leydder.com.inventory.exception.ProductNotFoundException;
 import leydder.com.inventory.model.Product;
-import leydder.com.inventory.service.ProductoService;
+import leydder.com.inventory.service.IProductService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -19,7 +19,7 @@ import static org.mockito.Mockito.*;
 class ProductControllerTest {
 
     @Mock
-    private ProductoService productoService;
+    private IProductService productoService;
 
     @InjectMocks
     private ProductController productController;
@@ -107,7 +107,7 @@ class ProductControllerTest {
     void updateProduct_returnsUpdatedProduct_withPathId() {
         Product product = new Product(null, "Teclado RGB", 95.0, 15);
 
-        Product result = productController.uppdateProduct(1, product);
+        Product result = productController.updateProduct(1, product);
 
         assertNotNull(result);
         assertEquals(1, result.getProductId());
@@ -119,7 +119,7 @@ class ProductControllerTest {
     void updateProduct_pathIdOverridesBodyId() {
         Product product = new Product(99, "Teclado RGB", 95.0, 15);
 
-        Product result = productController.uppdateProduct(1, product);
+        Product result = productController.updateProduct(1, product);
 
         assertEquals(1, result.getProductId());
     }

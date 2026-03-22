@@ -17,6 +17,6 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer productId;
     private String description;
-    private double price;
+    private Double price;
     private Integer stock;
 }
