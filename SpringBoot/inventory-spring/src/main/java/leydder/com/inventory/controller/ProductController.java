@@ -1,5 +1,6 @@
 package leydder.com.inventory.controller;
 
+import jakarta.validation.Valid;
 import leydder.com.inventory.model.Product;
 import leydder.com.inventory.service.IProductService;
 import lombok.RequiredArgsConstructor;
@@ -34,14 +35,14 @@ public class ProductController {
     }
 
     @PostMapping("/products")
-    public Product addProduct(@RequestBody Product product) {
+    public Product addProduct(@Valid @RequestBody Product product) {
         this.productoService.saveProduct(product);
         logger.info("Producto guardado: {}", product);
         return product;
     }
 
     @PutMapping("/products/{id}")
-    public Product updateProduct(@PathVariable Integer id, @RequestBody Product product) {
+    public Product updateProduct(@PathVariable Integer id, @Valid @RequestBody Product product) {
         product.setProductId(id);
         this.productoService.saveProduct(product);
         logger.info("Producto actualizado: {}", product);
