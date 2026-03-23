@@ -2,12 +2,17 @@ package bella_boutique.bella.service;
 
 import bella_boutique.bella.dto.ProductRequestDTO;
 import bella_boutique.bella.dto.ProductResponseDTO;
+import bella_boutique.bella.dto.ProductSizeDTO;
 import bella_boutique.bella.exception.InvalidRequestException;
 import bella_boutique.bella.exception.ResourceNotFoundException;
 import bella_boutique.bella.model.Product;
+import bella_boutique.bella.model.ProductSize;
 import bella_boutique.bella.repository.ProductRepository;
+import bella_boutique.bella.repository.ProductSizeRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -17,52 +22,54 @@ public class ProductServiceImpl implements ProductService {
     private static final String INVALID_ID = "El ID debe ser un número positivo";
 
     private final ProductRepository productRepository;
+    private final ProductSizeRepository productSizeRepository;
 
-    public ProductServiceImpl(ProductRepository productRepository) {
+    public ProductServiceImpl(ProductRepository productRepository,
+                              ProductSizeRepository productSizeRepository) {
         this.productRepository = productRepository;
+        this.productSizeRepository = productSizeRepository;
     }
 
     @Override
     public List<ProductResponseDTO> findAll() {
-        return productRepository.findAll()
-                .stream()
-                .map(this::toResponseDTO)
-                .toList();
+        return productRepository.findAll().stream().map(this::toResponseDTO).toList();
     }
 
     @Override
     public List<ProductResponseDTO> search(String query) {
         return productRepository
                 .findByReferenceNumberContainingIgnoreCaseOrNameContainingIgnoreCase(query, query)
-                .stream()
-                .map(this::toResponseDTO)
-                .toList();
+                .stream().map(this::toResponseDTO).toList();
     }
 
     @Override
     public ProductResponseDTO findById(Long id) {
         validateId(id);
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        String.format(PRODUCT_NOT_FOUND, id)));
-        return toResponseDTO(product);
+        return toResponseDTO(findProductById(id));
     }
 
     @Override
+    @Transactional
     public ProductResponseDTO create(ProductRequestDTO dto) {
         if (dto.getPrice() != null && dto.getPrice().signum() <= 0) {
             throw new InvalidRequestException("El precio debe ser mayor que 0");
         }
         Product product = toEntity(dto);
+        product = productRepository.save(product);
+
+        // Guarda las tallas si vienen en el request
+        if (dto.getSizes() != null && !dto.getSizes().isEmpty()) {
+            saveSizes(product, dto.getSizes());
+            updateTotalStock(product);
+        }
         return toResponseDTO(productRepository.save(product));
     }
 
     @Override
+    @Transactional
     public ProductResponseDTO update(Long id, ProductRequestDTO dto) {
         validateId(id);
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        String.format(PRODUCT_NOT_FOUND, id)));
+        Product product = findProductById(id);
         product.setReferenceNumber(dto.getReferenceNumber());
         product.setName(dto.getName());
         product.setImageUrl(dto.getImageUrl());
@@ -70,29 +77,57 @@ public class ProductServiceImpl implements ProductService {
         product.setPrice(dto.getPrice());
         product.setRating(dto.getRating());
         product.setSpecifications(dto.getSpecifications());
-        product.setStock(dto.getStock());
+
+        // Reemplaza las tallas si vienen
+        if (dto.getSizes() != null) {
+            productSizeRepository.deleteAll(productSizeRepository.findByProductId(id));
+            saveSizes(product, dto.getSizes());
+            updateTotalStock(product);
+        } else {
+            product.setStock(dto.getStock());
+        }
         return toResponseDTO(productRepository.save(product));
     }
 
     @Override
+    @Transactional
     public void delete(Long id) {
         validateId(id);
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        String.format(PRODUCT_NOT_FOUND, id)));
-        // Verifica que el producto no tenga ventas asociadas antes de eliminar
+        Product product = findProductById(id);
         if (productRepository.existsProductInSales(id)) {
-            throw new InvalidRequestException(
-                    "No se puede eliminar un producto que tiene ventas asociadas");
+            throw new InvalidRequestException("No se puede eliminar un producto que tiene ventas asociadas");
         }
         productRepository.delete(product);
     }
 
-    // Valida que el ID no sea nulo ni negativo
+    // Suma el stock de todas las tallas y actualiza el stock total del producto
+    public void updateTotalStock(Product product) {
+        int total = productSizeRepository.findByProductId(product.getId())
+                .stream().mapToInt(ProductSize::getStock).sum();
+        product.setStock(total);
+    }
+
+    private void saveSizes(Product product, List<ProductSizeDTO> sizeDTOs) {
+        List<ProductSize> sizes = new ArrayList<>();
+        for (ProductSizeDTO sizeDTO : sizeDTOs) {
+            ProductSize ps = new ProductSize();
+            ps.setProduct(product);
+            ps.setSizeName(sizeDTO.getSizeName());
+            ps.setStock(sizeDTO.getStock());
+            sizes.add(ps);
+        }
+        productSizeRepository.saveAll(sizes);
+    }
+
     private void validateId(Long id) {
         if (id == null || id <= 0) {
             throw new InvalidRequestException(INVALID_ID);
         }
+    }
+
+    private Product findProductById(Long id) {
+        return productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format(PRODUCT_NOT_FOUND, id)));
     }
 
     private ProductResponseDTO toResponseDTO(Product product) {
@@ -107,6 +142,17 @@ public class ProductServiceImpl implements ProductService {
         dto.setSpecifications(product.getSpecifications());
         dto.setStock(product.getStock());
         dto.setCreatedAt(product.getCreatedAt());
+
+        // Carga las tallas actualizadas desde la BD
+        List<ProductSizeDTO> sizes = productSizeRepository.findByProductId(product.getId())
+                .stream().map(ps -> {
+                    ProductSizeDTO s = new ProductSizeDTO();
+                    s.setId(ps.getId());
+                    s.setSizeName(ps.getSizeName());
+                    s.setStock(ps.getStock());
+                    return s;
+                }).toList();
+        dto.setSizes(sizes);
         return dto;
     }
 
@@ -119,8 +165,7 @@ public class ProductServiceImpl implements ProductService {
         product.setPrice(dto.getPrice());
         product.setRating(dto.getRating());
         product.setSpecifications(dto.getSpecifications());
-        product.setStock(dto.getStock());
+        product.setStock(dto.getStock() != null ? dto.getStock() : 0);
         return product;
     }
 }
-

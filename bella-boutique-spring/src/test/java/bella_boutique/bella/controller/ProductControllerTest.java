@@ -4,6 +4,7 @@ import bella_boutique.bella.dto.ProductRequestDTO;
 import bella_boutique.bella.dto.ProductResponseDTO;
 import bella_boutique.bella.exception.GlobalExceptionHandler;
 import bella_boutique.bella.exception.ResourceNotFoundException;
+import bella_boutique.bella.security.JwtUtil;
 import bella_boutique.bella.service.ProductService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -19,10 +22,12 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(controllers = {ProductController.class, GlobalExceptionHandler.class})
+@WithMockUser
 class ProductControllerTest {
 
     @Autowired
@@ -33,6 +38,12 @@ class ProductControllerTest {
 
     @MockitoBean
     private ProductService productService;
+
+    @MockitoBean
+    private JwtUtil jwtUtil;
+
+    @MockitoBean
+    private UserDetailsService userDetailsService;
 
     private ProductResponseDTO productResponse;
 
@@ -84,13 +95,14 @@ class ProductControllerTest {
     @Test
     void create_retorna201ConProductoCreado() throws Exception {
         ProductRequestDTO request = new ProductRequestDTO();
+        request.setReferenceNumber("REF-001");
         request.setName("Camiseta");
         request.setPrice(new BigDecimal("29.99"));
         request.setStock(10);
 
         when(productService.create(any(ProductRequestDTO.class))).thenReturn(productResponse);
 
-        mockMvc.perform(post("/api/products")
+        mockMvc.perform(post("/api/products").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -102,7 +114,7 @@ class ProductControllerTest {
         ProductRequestDTO request = new ProductRequestDTO();
         // sin name ni price — inválido
 
-        mockMvc.perform(post("/api/products")
+        mockMvc.perform(post("/api/products").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());

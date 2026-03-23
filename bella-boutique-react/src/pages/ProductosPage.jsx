@@ -3,21 +3,25 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 
 const EMPTY_FORM = {
-  referenceNumber: '', name: '', price: '', stock: '', rating: '', description: '', imageUrl: '',
+  referenceNumber: '', name: '', price: '', stock: '', rating: '',
+  description: '', imageUrl: '',
   specifications: { talla: '', color: '', material: '' },
+  sizes: [],
 };
 
 export default function ProductosPage() {
   const { user } = useAuth();
   const [products, setProducts] = useState([]);
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'table'
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
   const [editId, setEditId] = useState(null);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
-  const [imageMode, setImageMode] = useState('url'); // 'url' | 'file'
+  const [imageMode, setImageMode] = useState('url');
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
+  const [useSizes, setUseSizes] = useState(false);
 
   const loadProducts = async (q = '') => {
     const url = q ? `/api/products?search=${encodeURIComponent(q)}` : '/api/products';
@@ -40,13 +44,19 @@ export default function ProductosPage() {
     setImagePreview(URL.createObjectURL(file));
   };
 
+  const addSize = () => setForm({ ...form, sizes: [...form.sizes, { sizeName: '', stock: 0 }] });
+  const removeSize = (i) => setForm({ ...form, sizes: form.sizes.filter((_, idx) => idx !== i) });
+  const updateSize = (i, field, value) => {
+    const updated = [...form.sizes];
+    updated[i] = { ...updated[i], [field]: value };
+    setForm({ ...form, sizes: updated });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     try {
       let imageUrl = form.imageUrl;
-
-      // Si eligió subir archivo, primero lo sube y obtiene la URL
       if (imageMode === 'file' && imageFile) {
         const formData = new FormData();
         formData.append('file', imageFile);
@@ -60,20 +70,17 @@ export default function ProductosPage() {
         ...form,
         imageUrl,
         price: parseFloat(form.price),
-        stock: parseInt(form.stock),
+        stock: useSizes ? undefined : parseInt(form.stock),
         rating: parseFloat(form.rating) || 0,
+        sizes: useSizes ? form.sizes.map(s => ({ ...s, stock: parseInt(s.stock) })) : undefined,
       };
+
       if (editId) {
         await api.put(`/api/products/${editId}`, payload);
       } else {
         await api.post('/api/products', payload);
       }
-      setShowForm(false);
-      setForm(EMPTY_FORM);
-      setEditId(null);
-      setImageFile(null);
-      setImagePreview('');
-      setImageMode('url');
+      closeForm();
       loadProducts();
     } catch (err) {
       setError(err.response?.data?.message || 'Error al guardar');
@@ -81,13 +88,16 @@ export default function ProductosPage() {
   };
 
   const handleEdit = (p) => {
+    const hasSizes = p.sizes && p.sizes.length > 0;
     setForm({
       referenceNumber: p.referenceNumber || '',
       name: p.name, price: p.price, stock: p.stock,
       rating: p.rating || '', description: p.description || '',
       imageUrl: p.imageUrl || '',
       specifications: p.specifications || { talla: '', color: '', material: '' },
+      sizes: p.sizes || [],
     });
+    setUseSizes(hasSizes);
     setEditId(p.id);
     setShowForm(true);
   };
@@ -100,6 +110,17 @@ export default function ProductosPage() {
     } catch (err) {
       alert(err.response?.data?.message || 'No se puede eliminar');
     }
+  };
+
+  const closeForm = () => {
+    setShowForm(false);
+    setForm(EMPTY_FORM);
+    setEditId(null);
+    setImageFile(null);
+    setImagePreview('');
+    setImageMode('url');
+    setUseSizes(false);
+    setError('');
   };
 
   return (
@@ -116,6 +137,10 @@ export default function ProductosPage() {
             value={search}
             onChange={handleSearch}
           />
+          <div style={styles.viewToggle}>
+            <button style={{ ...styles.viewBtn, ...(viewMode === 'grid' ? styles.viewBtnActive : {}) }} onClick={() => setViewMode('grid')}>⊞ Grid</button>
+            <button style={{ ...styles.viewBtn, ...(viewMode === 'table' ? styles.viewBtnActive : {}) }} onClick={() => setViewMode('table')}>☰ Tabla</button>
+          </div>
           <button style={styles.btnPrimary} onClick={() => { setShowForm(true); setEditId(null); setForm(EMPTY_FORM); }}>
             + Nuevo Producto
           </button>
@@ -140,58 +165,73 @@ export default function ProductosPage() {
                 <input style={styles.input} type="number" step="0.01" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} required />
               </div>
               <div style={styles.formGroup}>
-                <label style={styles.label}>Stock *</label>
-                <input style={styles.input} type="number" value={form.stock} onChange={e => setForm({ ...form, stock: e.target.value })} required />
-              </div>
-              <div style={styles.formGroup}>
                 <label style={styles.label}>Rating (0-5)</label>
                 <input style={styles.input} type="number" step="0.1" min="0" max="5" value={form.rating} onChange={e => setForm({ ...form, rating: e.target.value })} />
               </div>
+
+              {/* Toggle tallas */}
+              <div style={{ gridColumn: '1 / -1' }}>
+                <label style={{ ...styles.label, display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+                  <input type="checkbox" checked={useSizes} onChange={e => setUseSizes(e.target.checked)} />
+                  Manejar stock por tallas
+                </label>
+              </div>
+
+              {!useSizes && (
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Stock *</label>
+                  <input style={styles.input} type="number" value={form.stock} onChange={e => setForm({ ...form, stock: e.target.value })} required />
+                </div>
+              )}
+
+              {useSizes && (
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <label style={styles.label}>Tallas y Stock</label>
+                  {form.sizes.map((s, i) => (
+                    <div key={i} style={styles.sizeRow}>
+                      <input style={{ ...styles.input, flex: 1 }} placeholder="Ej: S, M, L, XL, 38..." value={s.sizeName}
+                        onChange={e => updateSize(i, 'sizeName', e.target.value)} required />
+                      <input style={{ ...styles.input, width: '80px' }} type="number" min="0" placeholder="Stock" value={s.stock}
+                        onChange={e => updateSize(i, 'stock', e.target.value)} required />
+                      <button type="button" style={styles.btnRemoveSize} onClick={() => removeSize(i)}>✕</button>
+                    </div>
+                  ))}
+                  <button type="button" style={styles.btnAddSize} onClick={addSize}>+ Agregar talla</button>
+                </div>
+              )}
+
               <div style={{ ...styles.formGroup, gridColumn: '1 / -1' }}>
                 <label style={styles.label}>Imagen</label>
                 <div style={styles.imageToggle}>
-                  <button type="button"
-                    style={{ ...styles.toggleBtn, ...(imageMode === 'url' ? styles.toggleActive : {}) }}
-                    onClick={() => setImageMode('url')}>
-                    Desde URL
-                  </button>
-                  <button type="button"
-                    style={{ ...styles.toggleBtn, ...(imageMode === 'file' ? styles.toggleActive : {}) }}
-                    onClick={() => setImageMode('file')}>
-                    Subir archivo
-                  </button>
+                  <button type="button" style={{ ...styles.toggleBtn, ...(imageMode === 'url' ? styles.toggleActive : {}) }} onClick={() => setImageMode('url')}>Desde URL</button>
+                  <button type="button" style={{ ...styles.toggleBtn, ...(imageMode === 'file' ? styles.toggleActive : {}) }} onClick={() => setImageMode('file')}>Subir archivo</button>
                 </div>
                 {imageMode === 'url' ? (
-                  <input style={styles.input} value={form.imageUrl}
-                    onChange={e => setForm({ ...form, imageUrl: e.target.value })}
-                    placeholder="https://ejemplo.com/imagen.jpg" />
+                  <input style={styles.input} value={form.imageUrl} onChange={e => setForm({ ...form, imageUrl: e.target.value })} placeholder="https://ejemplo.com/imagen.jpg" />
                 ) : (
                   <div style={styles.fileUploadArea}>
                     <input type="file" accept="image/*" onChange={handleFileChange} style={styles.fileInput} id="fileInput" />
                     <label htmlFor="fileInput" style={styles.fileLabel}>
-                      {imagePreview
-                        ? <img src={imagePreview} alt="preview" style={styles.previewImg} />
-                        : <span>📁 Haz clic para seleccionar imagen</span>
-                      }
+                      {imagePreview ? <img src={imagePreview} alt="preview" style={styles.previewImg} /> : <span>📁 Haz clic para seleccionar imagen</span>}
                     </label>
                   </div>
                 )}
               </div>
               <div style={{ ...styles.formGroup, gridColumn: '1 / -1' }}>
                 <label style={styles.label}>Descripción</label>
-                <textarea style={{ ...styles.input, height: '80px', resize: 'vertical' }} value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
-              </div>
-              <div style={styles.formGroup}>
-                <label style={styles.label}>Talla</label>
-                <input style={styles.input} value={form.specifications.talla} onChange={e => setForm({ ...form, specifications: { ...form.specifications, talla: e.target.value } })} />
+                <textarea style={{ ...styles.input, height: '70px', resize: 'vertical' }} value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
               </div>
               <div style={styles.formGroup}>
                 <label style={styles.label}>Color</label>
                 <input style={styles.input} value={form.specifications.color} onChange={e => setForm({ ...form, specifications: { ...form.specifications, color: e.target.value } })} />
               </div>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Material</label>
+                <input style={styles.input} value={form.specifications.material} onChange={e => setForm({ ...form, specifications: { ...form.specifications, material: e.target.value } })} />
+              </div>
               {error && <p style={{ ...styles.error, gridColumn: '1 / -1' }}>{error}</p>}
               <div style={{ gridColumn: '1 / -1', display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-                <button type="button" style={styles.btnSecondary} onClick={() => setShowForm(false)}>Cancelar</button>
+                <button type="button" style={styles.btnSecondary} onClick={closeForm}>Cancelar</button>
                 <button type="submit" style={styles.btnPrimary}>{editId ? 'Actualizar' : 'Crear'}</button>
               </div>
             </form>
@@ -199,41 +239,96 @@ export default function ProductosPage() {
         </div>
       )}
 
-      <div style={styles.grid}>
-        {products.map(p => (
-          <div key={p.id} style={styles.card}>
-            <div style={styles.imageContainer}>
-              {p.imageUrl
-                ? <img src={p.imageUrl} alt={p.name} style={styles.image} />
-                : <div style={styles.imagePlaceholder}>👗</div>
-              }
-              {p.stock === 0 && <span style={styles.soldOut}>Agotado</span>}
-            </div>
-            <div style={styles.cardBody}>
-              {p.referenceNumber && <p style={styles.refNumber}>#{p.referenceNumber}</p>}
-              <p style={styles.cardName}>{p.name}</p>
-              {p.specifications?.talla && <p style={styles.cardSpec}>Talla: {p.specifications.talla}</p>}
-              {p.specifications?.color && <p style={styles.cardSpec}>Color: {p.specifications.color}</p>}
-              <div style={styles.cardFooter}>
-                <span style={styles.price}>${parseFloat(p.price).toLocaleString('es-CO')}</span>
-                <span style={styles.stock}>Stock: {p.stock}</span>
+      {viewMode === 'grid' ? (
+        <div style={styles.grid}>
+          {products.map(p => (
+            <div key={p.id} style={styles.card}>
+              <div style={styles.imageContainer}>
+                {p.imageUrl ? <img src={p.imageUrl} alt={p.name} style={styles.image} /> : <div style={styles.imagePlaceholder}>👗</div>}
+                {p.stock === 0 && <span style={styles.soldOut}>Agotado</span>}
               </div>
-              {p.rating > 0 && (
-                <div style={styles.rating}>
-                  {'★'.repeat(Math.round(p.rating))}{'☆'.repeat(5 - Math.round(p.rating))}
-                  <span style={styles.ratingNum}> {p.rating}</span>
-                </div>
-              )}
-              <div style={styles.cardActions}>
-                <button style={styles.btnEdit} onClick={() => handleEdit(p)}>Editar</button>
-                {user?.role === 'ADMIN' && (
-                  <button style={styles.btnDelete} onClick={() => handleDelete(p.id)}>Eliminar</button>
+              <div style={styles.cardBody}>
+                {p.referenceNumber && <p style={styles.refNumber}>#{p.referenceNumber}</p>}
+                <p style={styles.cardName}>{p.name}</p>
+                {p.sizes && p.sizes.length > 0 ? (
+                  <div style={styles.sizesList}>
+                    {p.sizes.map(s => (
+                      <span key={s.id} style={{ ...styles.sizeChip, opacity: s.stock === 0 ? 0.4 : 1 }}>
+                        {s.sizeName}: {s.stock}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  p.specifications?.color && <p style={styles.cardSpec}>Color: {p.specifications.color}</p>
                 )}
+                <div style={styles.cardFooter}>
+                  <span style={styles.price}>${parseFloat(p.price).toLocaleString('es-CO')}</span>
+                  <span style={styles.stock}>Stock: {p.stock}</span>
+                </div>
+                <div style={styles.cardActions}>
+                  <button style={styles.btnEdit} onClick={() => handleEdit(p)}>Editar</button>
+                  {user?.role === 'ADMIN' && (
+                    <button style={styles.btnDelete} onClick={() => handleDelete(p.id)}>Eliminar</button>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div style={styles.tableWrapper}>
+          <table style={styles.table}>
+            <thead>
+              <tr>
+                <th style={styles.th}>Ref.</th>
+                <th style={styles.th}>Nombre</th>
+                <th style={styles.th}>Precio</th>
+                <th style={styles.th}>Stock Total</th>
+                <th style={styles.th}>Tallas</th>
+                <th style={styles.th}>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {products.map(p => (
+                <tr key={p.id} style={styles.tr}>
+                  <td style={styles.td}><span style={styles.refBadge}>{p.referenceNumber}</span></td>
+                  <td style={styles.td}>
+                    <div style={styles.productCell}>
+                      {p.imageUrl && <img src={p.imageUrl} alt="" style={styles.thumbImg} />}
+                      <span style={{ fontWeight: 600 }}>{p.name}</span>
+                    </div>
+                  </td>
+                  <td style={{ ...styles.td, color: '#c9a96e', fontWeight: 700 }}>${parseFloat(p.price).toLocaleString('es-CO')}</td>
+                  <td style={styles.td}>
+                    <span style={{ ...styles.stockBadge, background: p.stock === 0 ? '#fde8e8' : '#e8f5e9', color: p.stock === 0 ? '#e74c3c' : '#2e7d32' }}>
+                      {p.stock}
+                    </span>
+                  </td>
+                  <td style={styles.td}>
+                    {p.sizes && p.sizes.length > 0 ? (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                        {p.sizes.map(s => (
+                          <span key={s.id} style={{ ...styles.sizeChip, fontSize: '11px', opacity: s.stock === 0 ? 0.4 : 1 }}>
+                            {s.sizeName}: {s.stock}
+                          </span>
+                        ))}
+                      </div>
+                    ) : <span style={{ color: '#aaa', fontSize: '12px' }}>—</span>}
+                  </td>
+                  <td style={styles.td}>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <button style={styles.btnEdit} onClick={() => handleEdit(p)}>Editar</button>
+                      {user?.role === 'ADMIN' && (
+                        <button style={styles.btnDelete} onClick={() => handleDelete(p.id)}>Eliminar</button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
@@ -245,39 +340,56 @@ const styles = {
   count: { color: '#888', fontSize: '14px', margin: '4px 0 0' },
   headerActions: { display: 'flex', gap: '12px', alignItems: 'center' },
   search: { padding: '10px 16px', border: '1.5px solid #e0e0e0', borderRadius: '8px', fontSize: '14px', width: '220px', outline: 'none', background: '#fff' },
-  btnPrimary: { padding: '10px 20px', background: '#1a1a2e', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '13px', letterSpacing: '0.5px' },
+  viewToggle: { display: 'flex', border: '1.5px solid #e0e0e0', borderRadius: '8px', overflow: 'hidden' },
+  viewBtn: { padding: '8px 14px', background: '#fff', border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: '600', color: '#888' },
+  viewBtnActive: { background: '#1a1a2e', color: '#fff' },
+  btnPrimary: { padding: '10px 20px', background: '#1a1a2e', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' },
   btnSecondary: { padding: '10px 20px', background: '#fff', color: '#1a1a2e', border: '1.5px solid #1a1a2e', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' },
   overlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200 },
-  modal: { background: '#fff', borderRadius: '16px', padding: '36px', width: '600px', maxWidth: '90vw', maxHeight: '90vh', overflowY: 'auto' },
+  modal: { background: '#fff', borderRadius: '16px', padding: '36px', width: '620px', maxWidth: '90vw', maxHeight: '90vh', overflowY: 'auto' },
   modalTitle: { fontSize: '22px', fontWeight: '700', color: '#1a1a2e', margin: '0 0 24px', fontFamily: 'Georgia, serif' },
   formGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' },
   formGroup: { display: 'flex', flexDirection: 'column', gap: '6px' },
   label: { fontSize: '12px', fontWeight: '600', color: '#555', letterSpacing: '0.5px', textTransform: 'uppercase' },
   input: { padding: '10px 12px', border: '1.5px solid #e0e0e0', borderRadius: '8px', fontSize: '14px', outline: 'none' },
   error: { color: '#e74c3c', fontSize: '13px', margin: 0 },
-  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '24px' },
-  card: { background: '#fff', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', transition: 'transform 0.2s, box-shadow 0.2s' },
-  imageContainer: { position: 'relative', height: '240px', background: '#f0ede8', overflow: 'hidden' },
-  image: { width: '100%', height: '100%', objectFit: 'cover' },
-  imagePlaceholder: { width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '60px' },
-  soldOut: { position: 'absolute', top: '12px', right: '12px', background: '#1a1a2e', color: '#fff', fontSize: '11px', fontWeight: '700', padding: '4px 10px', borderRadius: '12px', letterSpacing: '1px' },
-  cardBody: { padding: '16px' },
-  cardName: { fontWeight: '700', fontSize: '15px', color: '#1a1a2e', margin: '0 0 6px' },
-  cardSpec: { fontSize: '12px', color: '#888', margin: '2px 0' },
-  cardFooter: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '10px 0 6px' },
-  price: { fontWeight: '800', fontSize: '17px', color: '#c9a96e' },
-  stock: { fontSize: '12px', color: '#888', background: '#f5f5f5', padding: '3px 8px', borderRadius: '12px' },
-  rating: { color: '#c9a96e', fontSize: '13px', marginBottom: '10px' },
-  ratingNum: { color: '#888', fontSize: '12px' },
-  cardActions: { display: 'flex', gap: '8px' },
-  refNumber: { fontSize: '11px', color: '#c9a96e', fontWeight: '700', letterSpacing: '1px', margin: '0 0 4px' },
-  btnEdit: { flex: 1, padding: '8px', background: '#f0ede8', color: '#1a1a2e', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '12px' },
-  btnDelete: { flex: 1, padding: '8px', background: '#fde8e8', color: '#e74c3c', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '12px' },
+  sizeRow: { display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center' },
+  btnRemoveSize: { background: '#fde8e8', color: '#e74c3c', border: 'none', borderRadius: '6px', width: '32px', height: '32px', cursor: 'pointer', fontWeight: '700', flexShrink: 0 },
+  btnAddSize: { background: 'none', border: '1.5px dashed #c9a96e', color: '#c9a96e', borderRadius: '8px', padding: '6px 14px', cursor: 'pointer', fontWeight: '600', fontSize: '12px', marginTop: '4px' },
   imageToggle: { display: 'flex', gap: '8px', marginBottom: '8px' },
   toggleBtn: { padding: '6px 16px', border: '1.5px solid #e0e0e0', borderRadius: '6px', background: '#fff', cursor: 'pointer', fontSize: '12px', fontWeight: '600', color: '#888' },
   toggleActive: { border: '1.5px solid #1a1a2e', background: '#1a1a2e', color: '#fff' },
   fileUploadArea: { border: '2px dashed #e0e0e0', borderRadius: '8px', overflow: 'hidden', cursor: 'pointer' },
   fileInput: { display: 'none' },
-  fileLabel: { display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100px', cursor: 'pointer', color: '#888', fontSize: '14px' },
-  previewImg: { width: '100%', maxHeight: '160px', objectFit: 'cover', display: 'block' },
+  fileLabel: { display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '90px', cursor: 'pointer', color: '#888', fontSize: '14px' },
+  previewImg: { width: '100%', maxHeight: '140px', objectFit: 'cover', display: 'block' },
+  // Grid view
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '24px' },
+  card: { background: '#fff', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' },
+  imageContainer: { position: 'relative', height: '220px', background: '#f0ede8', overflow: 'hidden' },
+  image: { width: '100%', height: '100%', objectFit: 'cover' },
+  imagePlaceholder: { width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '60px' },
+  soldOut: { position: 'absolute', top: '12px', right: '12px', background: '#1a1a2e', color: '#fff', fontSize: '11px', fontWeight: '700', padding: '4px 10px', borderRadius: '12px' },
+  cardBody: { padding: '16px' },
+  cardName: { fontWeight: '700', fontSize: '15px', color: '#1a1a2e', margin: '0 0 6px' },
+  cardSpec: { fontSize: '12px', color: '#888', margin: '2px 0' },
+  cardFooter: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '10px 0 10px' },
+  price: { fontWeight: '800', fontSize: '17px', color: '#c9a96e' },
+  stock: { fontSize: '12px', color: '#888', background: '#f5f5f5', padding: '3px 8px', borderRadius: '12px' },
+  refNumber: { fontSize: '11px', color: '#c9a96e', fontWeight: '700', letterSpacing: '1px', margin: '0 0 4px' },
+  cardActions: { display: 'flex', gap: '8px' },
+  btnEdit: { flex: 1, padding: '8px', background: '#f0ede8', color: '#1a1a2e', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '12px' },
+  btnDelete: { flex: 1, padding: '8px', background: '#fde8e8', color: '#e74c3c', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '12px' },
+  sizesList: { display: 'flex', flexWrap: 'wrap', gap: '4px', margin: '6px 0' },
+  sizeChip: { background: '#f0ede8', color: '#1a1a2e', fontSize: '11px', fontWeight: '600', padding: '2px 8px', borderRadius: '10px' },
+  // Table view
+  tableWrapper: { background: '#fff', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' },
+  table: { width: '100%', borderCollapse: 'collapse' },
+  th: { textAlign: 'left', padding: '14px 16px', background: '#f8f7f4', fontSize: '11px', fontWeight: '700', color: '#555', textTransform: 'uppercase', letterSpacing: '0.5px', borderBottom: '2px solid #e0e0e0' },
+  tr: { borderBottom: '1px solid #f5f5f5' },
+  td: { padding: '12px 16px', fontSize: '14px', color: '#333', verticalAlign: 'middle' },
+  refBadge: { fontSize: '11px', color: '#c9a96e', fontWeight: '700', letterSpacing: '1px' },
+  productCell: { display: 'flex', alignItems: 'center', gap: '10px' },
+  thumbImg: { width: '36px', height: '36px', objectFit: 'cover', borderRadius: '6px' },
+  stockBadge: { fontSize: '12px', fontWeight: '700', padding: '3px 10px', borderRadius: '10px' },
 };

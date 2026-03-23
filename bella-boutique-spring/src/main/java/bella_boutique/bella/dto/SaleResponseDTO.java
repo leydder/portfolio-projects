@@ -10,14 +10,21 @@ public class SaleResponseDTO {
     private Long id;
     private LocalDateTime saleDate;
     private BigDecimal totalAmount;
+    private String paymentType;
+    private String buyerName;
+    private BigDecimal initialPayment;
+    private BigDecimal remainingBalance;
     private List<SaleItemResponseDTO> items;
+    private List<CreditPaymentDTO> creditPayments;
 
     @Data
     public static class SaleItemResponseDTO {
         private Long id;
         private Long productId;
         private String productName;
+        private String referenceNumber;
         private Integer quantity;
         private BigDecimal unitPrice;
+        private String sizeName;
     }
 }

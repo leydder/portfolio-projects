@@ -9,4 +9,5 @@ public interface UserService {
     User create(AuthRequestDTO dto, String role);
     List<User> findAll();
     void delete(Long id);
+    void changePassword(Long id, String newPassword);
 }

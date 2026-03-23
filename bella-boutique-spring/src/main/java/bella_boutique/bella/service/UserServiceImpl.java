@@ -61,4 +61,15 @@ public class UserServiceImpl implements UserService, UserDetailsService {
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario con ID " + id + " no encontrado"));
         userRepository.delete(user);
     }
+
+    @Override
+    public void changePassword(Long id, String newPassword) {
+        if (newPassword == null || newPassword.isBlank()) {
+            throw new InvalidRequestException("La nueva contraseña no puede estar vacía");
+        }
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario con ID " + id + " no encontrado"));
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
 }

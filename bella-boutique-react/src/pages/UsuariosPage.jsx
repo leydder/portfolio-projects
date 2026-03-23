@@ -6,6 +6,9 @@ export default function UsuariosPage() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ username: '', password: '', role: 'USER' });
   const [error, setError] = useState('');
+  const [pwModal, setPwModal] = useState(null); // { id, username }
+  const [newPassword, setNewPassword] = useState('');
+  const [pwError, setPwError] = useState('');
 
   const loadUsers = async () => {
     const res = await api.get('/api/users');
@@ -31,6 +34,18 @@ export default function UsuariosPage() {
     if (!confirm('¿Eliminar este usuario?')) return;
     await api.delete(`/api/users/${id}`);
     loadUsers();
+  };
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    setPwError('');
+    try {
+      await api.put(`/api/users/${pwModal.id}/password`, { password: newPassword });
+      setPwModal(null);
+      setNewPassword('');
+    } catch (err) {
+      setPwError(err.response?.data?.message || 'Error al cambiar contraseña');
+    }
   };
 
   return (
@@ -75,6 +90,26 @@ export default function UsuariosPage() {
         </div>
       )}
 
+      {pwModal && (
+        <div style={styles.overlay}>
+          <div style={styles.modal}>
+            <h2 style={styles.modalTitle}>Cambiar Contraseña</h2>
+            <p style={{ color: '#888', fontSize: '13px', marginBottom: '20px' }}>Usuario: <strong>{pwModal.username}</strong></p>
+            <form onSubmit={handleChangePassword} style={styles.form}>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Nueva Contraseña</label>
+                <input style={styles.input} type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required autoFocus />
+              </div>
+              {pwError && <p style={styles.error}>{pwError}</p>}
+              <div style={styles.modalActions}>
+                <button type="button" style={styles.btnSecondary} onClick={() => { setPwModal(null); setNewPassword(''); setPwError(''); }}>Cancelar</button>
+                <button type="submit" style={styles.btnPrimary}>Guardar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       <div style={styles.list}>
         {users.map(u => (
           <div key={u.id} style={styles.userCard}>
@@ -87,7 +122,12 @@ export default function UsuariosPage() {
                 {u.role}
               </span>
             </div>
-            <button style={styles.btnDelete} onClick={() => handleDelete(u.id)}>Eliminar</button>
+            <div style={styles.userActions}>
+              <button style={styles.btnPassword} onClick={() => { setPwModal({ id: u.id, username: u.username }); setNewPassword(''); setPwError(''); }}>
+                Cambiar contraseña
+              </button>
+              <button style={styles.btnDelete} onClick={() => handleDelete(u.id)}>Eliminar</button>
+            </div>
           </div>
         ))}
       </div>
@@ -104,18 +144,20 @@ const styles = {
   btnSecondary: { padding: '10px 20px', background: '#fff', color: '#1a1a2e', border: '1.5px solid #1a1a2e', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' },
   overlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200 },
   modal: { background: '#fff', borderRadius: '16px', padding: '36px', width: '420px', maxWidth: '90vw' },
-  modalTitle: { fontSize: '22px', fontWeight: '700', color: '#1a1a2e', margin: '0 0 24px', fontFamily: 'Georgia, serif' },
+  modalTitle: { fontSize: '22px', fontWeight: '700', color: '#1a1a2e', margin: '0 0 20px', fontFamily: 'Georgia, serif' },
   form: { display: 'flex', flexDirection: 'column', gap: '16px' },
   formGroup: { display: 'flex', flexDirection: 'column', gap: '6px' },
   label: { fontSize: '12px', fontWeight: '600', color: '#555', letterSpacing: '0.5px', textTransform: 'uppercase' },
   input: { padding: '10px 12px', border: '1.5px solid #e0e0e0', borderRadius: '8px', fontSize: '14px', outline: 'none' },
   error: { color: '#e74c3c', fontSize: '13px', margin: 0 },
-  modalActions: { display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '8px' },
+  modalActions: { display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '4px' },
   list: { display: 'flex', flexDirection: 'column', gap: '12px' },
   userCard: { background: '#fff', borderRadius: '12px', padding: '16px 24px', display: 'flex', alignItems: 'center', gap: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' },
   avatar: { width: '44px', height: '44px', background: '#1a1a2e', color: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', fontSize: '18px', flexShrink: 0 },
   userInfo: { flex: 1, display: 'flex', alignItems: 'center', gap: '12px' },
   username: { fontWeight: '700', color: '#1a1a2e', fontSize: '15px' },
   badge: { color: '#fff', fontSize: '11px', fontWeight: '700', padding: '3px 10px', borderRadius: '12px', letterSpacing: '1px' },
-  btnDelete: { background: '#fde8e8', color: '#e74c3c', border: 'none', borderRadius: '6px', padding: '8px 16px', cursor: 'pointer', fontWeight: '600', fontSize: '12px' },
+  userActions: { display: 'flex', gap: '8px' },
+  btnPassword: { background: '#f0ede8', color: '#1a1a2e', border: 'none', borderRadius: '6px', padding: '8px 14px', cursor: 'pointer', fontWeight: '600', fontSize: '12px' },
+  btnDelete: { background: '#fde8e8', color: '#e74c3c', border: 'none', borderRadius: '6px', padding: '8px 14px', cursor: 'pointer', fontWeight: '600', fontSize: '12px' },
 };

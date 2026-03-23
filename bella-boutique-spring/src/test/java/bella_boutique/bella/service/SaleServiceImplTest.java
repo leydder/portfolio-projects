@@ -3,9 +3,12 @@ package bella_boutique.bella.service;
 import bella_boutique.bella.dto.SaleRequestDTO;
 import bella_boutique.bella.exception.InsufficientStockException;
 import bella_boutique.bella.exception.ResourceNotFoundException;
+import bella_boutique.bella.model.PaymentType;
 import bella_boutique.bella.model.Product;
 import bella_boutique.bella.model.Sale;
+import bella_boutique.bella.repository.CreditPaymentRepository;
 import bella_boutique.bella.repository.ProductRepository;
+import bella_boutique.bella.repository.ProductSizeRepository;
 import bella_boutique.bella.repository.SaleRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,6 +23,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -30,6 +34,15 @@ class SaleServiceImplTest {
 
     @Mock
     private ProductRepository productRepository;
+
+    @Mock
+    private ProductSizeRepository productSizeRepository;
+
+    @Mock
+    private CreditPaymentRepository creditPaymentRepository;
+
+    @Mock
+    private ProductServiceImpl productService;
 
     @InjectMocks
     private SaleServiceImpl saleService;
@@ -51,16 +64,18 @@ class SaleServiceImplTest {
 
         Sale savedSale = new Sale();
         savedSale.setId(1L);
+        savedSale.setPaymentType(PaymentType.CONTADO);
         savedSale.setTotalAmount(new BigDecimal("89.97"));
+        savedSale.setRemainingBalance(BigDecimal.ZERO);
         savedSale.setItems(List.of());
 
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
         when(productRepository.save(any(Product.class))).thenReturn(product);
         when(saleRepository.save(any(Sale.class))).thenReturn(savedSale);
+        when(creditPaymentRepository.findBySaleId(1L)).thenReturn(List.of());
 
         saleService.create(dto);
 
-        // Verifica que el stock bajó de 10 a 7
         assertEquals(7, product.getStock());
         verify(productRepository).save(product);
     }
@@ -73,7 +88,6 @@ class SaleServiceImplTest {
 
         assertThrows(InsufficientStockException.class, () -> saleService.create(dto));
 
-        // Verifica que el stock no se modificó
         assertEquals(10, product.getStock());
         verify(productRepository, never()).save(any());
     }
@@ -93,8 +107,8 @@ class SaleServiceImplTest {
         item.setQuantity(quantity);
 
         SaleRequestDTO dto = new SaleRequestDTO();
+        dto.setPaymentType("CONTADO");
         dto.setItems(List.of(item));
         return dto;
     }
 }
-

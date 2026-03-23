@@ -3,6 +3,7 @@ package bella_boutique.bella.dto;
 import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 @Data
@@ -16,5 +17,6 @@ public class ProductResponseDTO {
     private Double rating;
     private Map<String, String> specifications;
     private Integer stock;
+    private List<ProductSizeDTO> sizes;
     private LocalDateTime createdAt;
 }

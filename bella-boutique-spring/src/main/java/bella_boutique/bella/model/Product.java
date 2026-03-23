@@ -31,8 +31,12 @@ public class Product {
     @Column(name = "spec_value")
     private Map<String, String> specifications;
 
+    // Stock total (suma de todos los stocks por talla)
     @Column(nullable = false)
     private Integer stock;
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<ProductSize> sizes;
 
     private LocalDateTime createdAt;
 

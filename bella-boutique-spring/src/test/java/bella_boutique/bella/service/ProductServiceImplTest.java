@@ -6,6 +6,7 @@ import bella_boutique.bella.exception.InvalidRequestException;
 import bella_boutique.bella.exception.ResourceNotFoundException;
 import bella_boutique.bella.model.Product;
 import bella_boutique.bella.repository.ProductRepository;
+import bella_boutique.bella.repository.ProductSizeRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,6 +27,9 @@ class ProductServiceImplTest {
     @Mock
     private ProductRepository productRepository;
 
+    @Mock
+    private ProductSizeRepository productSizeRepository;
+
     @InjectMocks
     private ProductServiceImpl productService;
 
@@ -43,6 +47,7 @@ class ProductServiceImplTest {
     @Test
     void findAll_retornaListaDeProductos() {
         when(productRepository.findAll()).thenReturn(List.of(product));
+        when(productSizeRepository.findByProductId(1L)).thenReturn(List.of());
 
         List<ProductResponseDTO> result = productService.findAll();
 
@@ -62,6 +67,7 @@ class ProductServiceImplTest {
     @Test
     void findById_retornaProductoExistente() {
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+        when(productSizeRepository.findByProductId(1L)).thenReturn(List.of());
 
         ProductResponseDTO result = productService.findById(1L);
 
@@ -94,11 +100,12 @@ class ProductServiceImplTest {
         dto.setStock(10);
 
         when(productRepository.save(any(Product.class))).thenReturn(product);
+        when(productSizeRepository.findByProductId(1L)).thenReturn(List.of());
 
         ProductResponseDTO result = productService.create(dto);
 
         assertEquals("Camiseta", result.getName());
-        verify(productRepository).save(any(Product.class));
+        verify(productRepository, atLeastOnce()).save(any(Product.class));
     }
 
     @Test
@@ -119,4 +126,3 @@ class ProductServiceImplTest {
         assertThrows(InvalidRequestException.class, () -> productService.delete(1L));
     }
 }
-

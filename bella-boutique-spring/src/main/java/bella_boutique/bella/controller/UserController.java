@@ -36,4 +36,11 @@ public class UserController {
         userService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/{id}/password")
+    public ResponseEntity<Void> changePassword(@PathVariable Long id,
+                                               @RequestBody java.util.Map<String, String> body) {
+        userService.changePassword(id, body.get("password"));
+        return ResponseEntity.noContent().build();
+    }
 }

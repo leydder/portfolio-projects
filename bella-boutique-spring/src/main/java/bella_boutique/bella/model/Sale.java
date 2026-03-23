@@ -20,8 +20,20 @@ public class Sale {
     @Column(nullable = false)
     private BigDecimal totalAmount;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PaymentType paymentType;
+
+    // Solo para ventas a crédito
+    private String buyerName;
+    private BigDecimal initialPayment;
+    private BigDecimal remainingBalance;
+
     @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SaleItem> items;
+
+    @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CreditPayment> creditPayments;
 
     @PrePersist
     public void prePersist() {

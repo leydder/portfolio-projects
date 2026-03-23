@@ -1,5 +1,6 @@
 package bella_boutique.bella.controller;
 
+import bella_boutique.bella.dto.CreditPaymentDTO;
 import bella_boutique.bella.dto.SaleRequestDTO;
 import bella_boutique.bella.dto.SaleResponseDTO;
 import bella_boutique.bella.service.SaleService;
@@ -33,6 +34,12 @@ public class SaleController {
     @GetMapping("/{id}")
     public ResponseEntity<SaleResponseDTO> findById(@PathVariable Long id) {
         return ResponseEntity.ok(saleService.findById(id));
+    }
+
+    @PutMapping("/{saleId}/payments")
+    public ResponseEntity<SaleResponseDTO> registerPayment(@PathVariable Long saleId,
+                                                            @RequestBody CreditPaymentDTO dto) {
+        return ResponseEntity.ok(saleService.registerPayment(saleId, dto));
     }
 }
 
