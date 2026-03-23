@@ -24,7 +24,6 @@ public class Sale {
     @Column(nullable = false)
     private PaymentType paymentType;
 
-    // Solo para ventas a crédito
     private String buyerName;
     private BigDecimal initialPayment;
     private BigDecimal remainingBalance;

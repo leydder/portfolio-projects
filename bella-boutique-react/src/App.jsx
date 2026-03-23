@@ -4,6 +4,8 @@ import LoginPage from './pages/LoginPage';
 import ProductosPage from './pages/ProductosPage';
 import VentasPage from './pages/VentasPage';
 import UsuariosPage from './pages/UsuariosPage';
+import HistorialPage from './pages/HistorialPage';
+import DeudoresPage from './pages/DeudoresPage';
 import Navbar from './components/Navbar';
 
 function ProtectedRoute({ children, adminOnly = false }) {
@@ -40,6 +42,16 @@ function AppRoutes() {
       <Route path="/usuarios" element={
         <ProtectedRoute adminOnly>
           <Layout><UsuariosPage /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/historial" element={
+        <ProtectedRoute>
+          <Layout><HistorialPage /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/deudores" element={
+        <ProtectedRoute>
+          <Layout><DeudoresPage /></Layout>
         </ProtectedRoute>
       } />
       <Route path="*" element={<Navigate to={user ? '/productos' : '/login'} />} />

@@ -57,7 +57,6 @@ public class ProductServiceImpl implements ProductService {
         Product product = toEntity(dto);
         product = productRepository.save(product);
 
-        // Guarda las tallas si vienen en el request
         if (dto.getSizes() != null && !dto.getSizes().isEmpty()) {
             saveSizes(product, dto.getSizes());
             updateTotalStock(product);
@@ -78,7 +77,6 @@ public class ProductServiceImpl implements ProductService {
         product.setRating(dto.getRating());
         product.setSpecifications(dto.getSpecifications());
 
-        // Reemplaza las tallas si vienen
         if (dto.getSizes() != null) {
             productSizeRepository.deleteAll(productSizeRepository.findByProductId(id));
             saveSizes(product, dto.getSizes());
@@ -100,7 +98,6 @@ public class ProductServiceImpl implements ProductService {
         productRepository.delete(product);
     }
 
-    // Suma el stock de todas las tallas y actualiza el stock total del producto
     public void updateTotalStock(Product product) {
         int total = productSizeRepository.findByProductId(product.getId())
                 .stream().mapToInt(ProductSize::getStock).sum();
@@ -143,7 +140,6 @@ public class ProductServiceImpl implements ProductService {
         dto.setStock(product.getStock());
         dto.setCreatedAt(product.getCreatedAt());
 
-        // Carga las tallas actualizadas desde la BD
         List<ProductSizeDTO> sizes = productSizeRepository.findByProductId(product.getId())
                 .stream().map(ps -> {
                     ProductSizeDTO s = new ProductSizeDTO();

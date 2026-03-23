@@ -27,7 +27,6 @@ public class SaleItem {
     @Column(nullable = false)
     private BigDecimal unitPrice;
 
-    // Talla vendida (nombre guardado al momento de la venta)
     private String sizeName;
 
     @ManyToOne

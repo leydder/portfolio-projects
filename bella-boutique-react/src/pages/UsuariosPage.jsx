@@ -6,9 +6,9 @@ export default function UsuariosPage() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ username: '', password: '', role: 'USER' });
   const [error, setError] = useState('');
-  const [pwModal, setPwModal] = useState(null); // { id, username }
+  const [passwordModal, setPasswordModal] = useState(null);
   const [newPassword, setNewPassword] = useState('');
-  const [pwError, setPwError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
 
   const loadUsers = async () => {
     const res = await api.get('/api/users');
@@ -38,13 +38,13 @@ export default function UsuariosPage() {
 
   const handleChangePassword = async (e) => {
     e.preventDefault();
-    setPwError('');
+    setPasswordError('');
     try {
-      await api.put(`/api/users/${pwModal.id}/password`, { password: newPassword });
-      setPwModal(null);
+      await api.put(`/api/users/${passwordModal.id}/password`, { password: newPassword });
+      setPasswordModal(null);
       setNewPassword('');
     } catch (err) {
-      setPwError(err.response?.data?.message || 'Error al cambiar contraseña');
+      setPasswordError(err.response?.data?.message || 'Error al cambiar contraseña');
     }
   };
 
@@ -90,19 +90,19 @@ export default function UsuariosPage() {
         </div>
       )}
 
-      {pwModal && (
+      {passwordModal && (
         <div style={styles.overlay}>
           <div style={styles.modal}>
             <h2 style={styles.modalTitle}>Cambiar Contraseña</h2>
-            <p style={{ color: '#888', fontSize: '13px', marginBottom: '20px' }}>Usuario: <strong>{pwModal.username}</strong></p>
+            <p style={{ color: '#888', fontSize: '13px', marginBottom: '20px' }}>Usuario: <strong>{passwordModal.username}</strong></p>
             <form onSubmit={handleChangePassword} style={styles.form}>
               <div style={styles.formGroup}>
                 <label style={styles.label}>Nueva Contraseña</label>
                 <input style={styles.input} type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required autoFocus />
               </div>
-              {pwError && <p style={styles.error}>{pwError}</p>}
+              {passwordError && <p style={styles.error}>{passwordError}</p>}
               <div style={styles.modalActions}>
-                <button type="button" style={styles.btnSecondary} onClick={() => { setPwModal(null); setNewPassword(''); setPwError(''); }}>Cancelar</button>
+                <button type="button" style={styles.btnSecondary} onClick={() => { setPasswordModal(null); setNewPassword(''); setPasswordError(''); }}>Cancelar</button>
                 <button type="submit" style={styles.btnPrimary}>Guardar</button>
               </div>
             </form>
@@ -123,7 +123,7 @@ export default function UsuariosPage() {
               </span>
             </div>
             <div style={styles.userActions}>
-              <button style={styles.btnPassword} onClick={() => { setPwModal({ id: u.id, username: u.username }); setNewPassword(''); setPwError(''); }}>
+              <button style={styles.btnPassword} onClick={() => { setPasswordModal({ id: u.id, username: u.username }); setNewPassword(''); setPasswordError(''); }}>
                 Cambiar contraseña
               </button>
               <button style={styles.btnDelete} onClick={() => handleDelete(u.id)}>Eliminar</button>

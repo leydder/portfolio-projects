@@ -21,20 +21,16 @@ public class FileController {
 
     @PostMapping("/upload")
     public ResponseEntity<Map<String, String>> upload(@RequestParam("file") MultipartFile file) throws IOException {
-        // Crea la carpeta uploads si no existe
         Path uploadPath = Paths.get(uploadDir);
         if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath);
         }
 
-        // Genera nombre único para evitar colisiones
         String extension = getExtension(file.getOriginalFilename());
         String filename = UUID.randomUUID() + extension;
-        Path filePath = uploadPath.resolve(filename);
-        Files.copy(file.getInputStream(), filePath);
+        Files.copy(file.getInputStream(), uploadPath.resolve(filename));
 
-        String url = "/uploads/" + filename;
-        return ResponseEntity.ok(Map.of("url", url));
+        return ResponseEntity.ok(Map.of("url", "/uploads/" + filename));
     }
 
     private String getExtension(String filename) {

@@ -5,25 +5,31 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
+
 @Data
 @Entity
 @Table(name = "products")
 public class Product {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private  Long id;
+    private Long id;
+
     @Column(nullable = false, unique = true)
     private String referenceNumber;
 
     @Column(nullable = false)
     private String name;
 
-    private  String imageUrl;
+    private String imageUrl;
     private String description;
+
     @Column(nullable = false)
     private BigDecimal price;
-    private  Double rating;
+
+    private Double rating;
 
     @ElementCollection
     @CollectionTable(name = "product_specifications", joinColumns = @JoinColumn(name = "product_id"))
@@ -31,12 +37,11 @@ public class Product {
     @Column(name = "spec_value")
     private Map<String, String> specifications;
 
-    // Stock total (suma de todos los stocks por talla)
     @Column(nullable = false)
     private Integer stock;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-    private java.util.List<ProductSize> sizes;
+    private List<ProductSize> sizes;
 
     private LocalDateTime createdAt;
 
@@ -45,4 +50,3 @@ public class Product {
         this.createdAt = LocalDateTime.now();
     }
 }
-

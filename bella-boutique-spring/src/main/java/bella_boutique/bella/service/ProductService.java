@@ -2,6 +2,7 @@ package bella_boutique.bella.service;
 
 import bella_boutique.bella.dto.ProductRequestDTO;
 import bella_boutique.bella.dto.ProductResponseDTO;
+import bella_boutique.bella.model.Product;
 import java.util.List;
 
 public interface ProductService {
@@ -11,4 +12,5 @@ public interface ProductService {
     ProductResponseDTO create(ProductRequestDTO dto);
     ProductResponseDTO update(Long id, ProductRequestDTO dto);
     void delete(Long id);
+    void updateTotalStock(Product product);
 }

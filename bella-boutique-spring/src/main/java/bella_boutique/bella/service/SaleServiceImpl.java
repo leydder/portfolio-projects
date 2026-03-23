@@ -26,13 +26,13 @@ public class SaleServiceImpl implements SaleService {
     private final ProductRepository productRepository;
     private final ProductSizeRepository productSizeRepository;
     private final CreditPaymentRepository creditPaymentRepository;
-    private final ProductServiceImpl productService;
+    private final ProductService productService;
 
     public SaleServiceImpl(SaleRepository saleRepository,
                            ProductRepository productRepository,
                            ProductSizeRepository productSizeRepository,
                            CreditPaymentRepository creditPaymentRepository,
-                           ProductServiceImpl productService) {
+                           ProductService productService) {
         this.saleRepository = saleRepository;
         this.productRepository = productRepository;
         this.productSizeRepository = productSizeRepository;
@@ -44,22 +44,9 @@ public class SaleServiceImpl implements SaleService {
     @Transactional
     public SaleResponseDTO create(SaleRequestDTO dto) {
         PaymentType paymentType = parsePaymentType(dto.getPaymentType());
+        validateCreditFields(paymentType, dto);
 
-        // Validaciones de crédito
-        if (paymentType == PaymentType.CREDITO) {
-            if (dto.getBuyerName() == null || dto.getBuyerName().isBlank()) {
-                throw new InvalidRequestException("El nombre del comprador es obligatorio para ventas a crédito");
-            }
-            if (dto.getInitialPayment() == null || dto.getInitialPayment().signum() < 0) {
-                throw new InvalidRequestException("El pago inicial es obligatorio para ventas a crédito");
-            }
-        }
-
-        Sale sale = new Sale();
-        sale.setPaymentType(paymentType);
-        sale.setBuyerName(dto.getBuyerName());
-        sale.setInitialPayment(dto.getInitialPayment());
-
+        Sale sale = buildSale(dto, paymentType);
         List<SaleItem> items = new ArrayList<>();
         BigDecimal total = BigDecimal.ZERO;
 
@@ -68,75 +55,17 @@ public class SaleServiceImpl implements SaleService {
                     .orElseThrow(() -> new ResourceNotFoundException(
                             String.format(PRODUCT_NOT_FOUND, itemDTO.getProductId())));
 
-            SaleItem item = new SaleItem();
-            item.setSale(sale);
-            item.setProduct(product);
-            item.setQuantity(itemDTO.getQuantity());
-            item.setUnitPrice(product.getPrice());
-
-            // Si viene con talla, descuenta de esa talla específica
-            if (itemDTO.getProductSizeId() != null) {
-                ProductSize size = productSizeRepository.findById(itemDTO.getProductSizeId())
-                        .orElseThrow(() -> new ResourceNotFoundException("Talla no encontrada"));
-
-                // Verifica stock suficiente en esa talla
-                if (size.getStock() < itemDTO.getQuantity()) {
-                    throw new InsufficientStockException(String.format(INSUFFICIENT_STOCK,
-                            product.getName(), size.getSizeName(), size.getStock(), itemDTO.getQuantity()));
-                }
-
-                // Descuenta el stock de la talla
-                size.setStock(size.getStock() - itemDTO.getQuantity());
-                productSizeRepository.save(size);
-
-                item.setSizeName(size.getSizeName());
-                item.setProductSize(size);
-
-                // Actualiza el stock total del producto
-                productService.updateTotalStock(product);
-                productRepository.save(product);
-
-            } else {
-                // Sin talla: descuenta del stock general
-                if (product.getStock() < itemDTO.getQuantity()) {
-                    throw new InsufficientStockException(String.format(
-                            "Stock insuficiente para '%s'. Disponible: %d, solicitado: %d",
-                            product.getName(), product.getStock(), itemDTO.getQuantity()));
-                }
-                product.setStock(product.getStock() - itemDTO.getQuantity());
-                productRepository.save(product);
-                item.setSizeName(itemDTO.getSizeName());
-            }
-
+            SaleItem item = buildSaleItem(sale, product, itemDTO);
             items.add(item);
             total = total.add(product.getPrice().multiply(BigDecimal.valueOf(itemDTO.getQuantity())));
         }
 
         sale.setItems(items);
         sale.setTotalAmount(total);
-
-        // Calcula saldo restante para crédito
-        if (paymentType == PaymentType.CREDITO) {
-            BigDecimal inicial = dto.getInitialPayment() != null ? dto.getInitialPayment() : BigDecimal.ZERO;
-            sale.setRemainingBalance(total.subtract(inicial));
-        } else {
-            sale.setRemainingBalance(BigDecimal.ZERO);
-        }
+        sale.setRemainingBalance(calculateRemainingBalance(paymentType, total, dto.getInitialPayment()));
 
         Sale savedSale = saleRepository.save(sale);
-
-        // Guarda los pagos a crédito si existen
-        if (paymentType == PaymentType.CREDITO && dto.getCreditPayments() != null) {
-            for (CreditPaymentDTO cpDTO : dto.getCreditPayments()) {
-                CreditPayment cp = new CreditPayment();
-                cp.setSale(savedSale);
-                cp.setAmount(cpDTO.getAmount());
-                cp.setDueDate(cpDTO.getDueDate());
-                cp.setPaid(false);
-                cp.setNotes(cpDTO.getNotes());
-                creditPaymentRepository.save(cp);
-            }
-        }
+        saveCreditPayments(paymentType, dto, savedSale);
 
         return toResponseDTO(savedSale);
     }
@@ -164,14 +93,12 @@ public class SaleServiceImpl implements SaleService {
             throw new InvalidRequestException("Solo se pueden registrar pagos en ventas a crédito");
         }
 
-        // Marca el pago como pagado
-        CreditPayment cp = creditPaymentRepository.findById(dto.getId())
+        CreditPayment payment = creditPaymentRepository.findById(dto.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Pago no encontrado"));
-        cp.setPaid(true);
-        cp.setPaidDate(java.time.LocalDate.now());
-        creditPaymentRepository.save(cp);
+        payment.setPaid(true);
+        payment.setPaidDate(java.time.LocalDate.now());
+        creditPaymentRepository.save(payment);
 
-        // Actualiza el saldo restante
         BigDecimal totalPagado = creditPaymentRepository.findBySaleId(saleId).stream()
                 .filter(CreditPayment::isPaid)
                 .map(CreditPayment::getAmount)
@@ -183,10 +110,91 @@ public class SaleServiceImpl implements SaleService {
         return toResponseDTO(sale);
     }
 
+    private void validateCreditFields(PaymentType paymentType, SaleRequestDTO dto) {
+        if (paymentType != PaymentType.CREDITO) return;
+        if (dto.getBuyerName() == null || dto.getBuyerName().isBlank()) {
+            throw new InvalidRequestException("El nombre del comprador es obligatorio para ventas a crédito");
+        }
+        if (dto.getInitialPayment() == null || dto.getInitialPayment().signum() < 0) {
+            throw new InvalidRequestException("El pago inicial es obligatorio para ventas a crédito");
+        }
+    }
+
+    private Sale buildSale(SaleRequestDTO dto, PaymentType paymentType) {
+        Sale sale = new Sale();
+        sale.setPaymentType(paymentType);
+        sale.setBuyerName(dto.getBuyerName());
+        sale.setInitialPayment(dto.getInitialPayment());
+        return sale;
+    }
+
+    private SaleItem buildSaleItem(Sale sale, Product product, SaleRequestDTO.SaleItemRequestDTO itemDTO) {
+        SaleItem item = new SaleItem();
+        item.setSale(sale);
+        item.setProduct(product);
+        item.setQuantity(itemDTO.getQuantity());
+        item.setUnitPrice(product.getPrice());
+
+        if (itemDTO.getProductSizeId() != null) {
+            deductSizeStock(item, product, itemDTO);
+        } else {
+            deductGeneralStock(item, product, itemDTO);
+        }
+        return item;
+    }
+
+    private void deductSizeStock(SaleItem item, Product product, SaleRequestDTO.SaleItemRequestDTO itemDTO) {
+        ProductSize size = productSizeRepository.findById(itemDTO.getProductSizeId())
+                .orElseThrow(() -> new ResourceNotFoundException("Talla no encontrada"));
+
+        if (size.getStock() < itemDTO.getQuantity()) {
+            throw new InsufficientStockException(String.format(INSUFFICIENT_STOCK,
+                    product.getName(), size.getSizeName(), size.getStock(), itemDTO.getQuantity()));
+        }
+
+        size.setStock(size.getStock() - itemDTO.getQuantity());
+        productSizeRepository.save(size);
+        item.setSizeName(size.getSizeName());
+        item.setProductSize(size);
+
+        productService.updateTotalStock(product);
+        productRepository.save(product);
+    }
+
+    private void deductGeneralStock(SaleItem item, Product product, SaleRequestDTO.SaleItemRequestDTO itemDTO) {
+        if (product.getStock() < itemDTO.getQuantity()) {
+            throw new InsufficientStockException(String.format(
+                    "Stock insuficiente para '%s'. Disponible: %d, solicitado: %d",
+                    product.getName(), product.getStock(), itemDTO.getQuantity()));
+        }
+        product.setStock(product.getStock() - itemDTO.getQuantity());
+        productRepository.save(product);
+        item.setSizeName(itemDTO.getSizeName());
+    }
+
+    private BigDecimal calculateRemainingBalance(PaymentType paymentType, BigDecimal total, BigDecimal initialPayment) {
+        if (paymentType != PaymentType.CREDITO) return BigDecimal.ZERO;
+        BigDecimal inicial = initialPayment != null ? initialPayment : BigDecimal.ZERO;
+        return total.subtract(inicial);
+    }
+
+    private void saveCreditPayments(PaymentType paymentType, SaleRequestDTO dto, Sale savedSale) {
+        if (paymentType != PaymentType.CREDITO || dto.getCreditPayments() == null) return;
+        for (CreditPaymentDTO cpDTO : dto.getCreditPayments()) {
+            CreditPayment cp = new CreditPayment();
+            cp.setSale(savedSale);
+            cp.setAmount(cpDTO.getAmount());
+            cp.setDueDate(cpDTO.getDueDate());
+            cp.setPaid(false);
+            cp.setNotes(cpDTO.getNotes());
+            creditPaymentRepository.save(cp);
+        }
+    }
+
     private PaymentType parsePaymentType(String type) {
         try {
             return PaymentType.valueOf(type.toUpperCase());
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
             throw new InvalidRequestException("Tipo de pago inválido. Use CONTADO o CREDITO");
         }
     }
@@ -213,7 +221,6 @@ public class SaleServiceImpl implements SaleService {
             return i;
         }).toList());
 
-        // Carga los pagos a crédito
         List<CreditPaymentDTO> payments = creditPaymentRepository.findBySaleId(sale.getId())
                 .stream().map(cp -> {
                     CreditPaymentDTO cpDTO = new CreditPaymentDTO();

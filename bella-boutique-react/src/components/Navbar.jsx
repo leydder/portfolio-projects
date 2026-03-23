@@ -19,6 +19,8 @@ export default function Navbar() {
       <div style={styles.links}>
         <Link to="/productos" style={styles.link}>Productos</Link>
         <Link to="/ventas" style={styles.link}>Ventas</Link>
+        <Link to="/historial" style={styles.link}>Historial</Link>
+        <Link to="/deudores" style={styles.link}>Deudores</Link>
         {user?.role === 'ADMIN' && (
           <Link to="/usuarios" style={styles.link}>Usuarios</Link>
         )}

@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
@@ -39,7 +40,7 @@ public class UserController {
 
     @PutMapping("/{id}/password")
     public ResponseEntity<Void> changePassword(@PathVariable Long id,
-                                               @RequestBody java.util.Map<String, String> body) {
+                                               @RequestBody Map<String, String> body) {
         userService.changePassword(id, body.get("password"));
         return ResponseEntity.noContent().build();
     }

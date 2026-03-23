@@ -26,7 +26,6 @@ export default function VentasPage() {
 
   useEffect(() => { loadData(); }, []);
 
-  // Items
   const addItem = () => setItems([...items, { productId: '', productSizeId: '', quantity: 1 }]);
   const removeItem = (i) => setItems(items.filter((_, idx) => idx !== i));
   const updateItem = (i, field, value) => {
@@ -41,7 +40,6 @@ export default function VentasPage() {
     return product?.sizes || [];
   };
 
-  // Credit payments
   const addCreditPayment = () => setCreditPayments([...creditPayments, { ...EMPTY_CREDIT_PAYMENT }]);
   const removeCreditPayment = (i) => setCreditPayments(creditPayments.filter((_, idx) => idx !== i));
   const updateCreditPayment = (i, field, value) => {
@@ -140,7 +138,6 @@ export default function VentasPage() {
             <h2 style={styles.modalTitle}>Registrar Venta</h2>
             <form onSubmit={handleSubmit}>
 
-              {/* Tipo de pago */}
               <div style={styles.formGroup}>
                 <label style={styles.label}>Tipo de Pago *</label>
                 <div style={styles.paymentToggle}>
@@ -157,7 +154,6 @@ export default function VentasPage() {
                 </div>
               </div>
 
-              {/* Datos de crédito */}
               {paymentType === 'CREDITO' && (
                 <div style={styles.creditSection}>
                   <div style={styles.creditRow}>
@@ -189,7 +185,6 @@ export default function VentasPage() {
                 </div>
               )}
 
-              {/* Items */}
               <div style={{ marginTop: '16px' }}>
                 <label style={styles.label}>Productos *</label>
                 {items.map((item, i) => {
@@ -241,7 +236,6 @@ export default function VentasPage() {
         </div>
       )}
 
-      {/* Detalle de venta */}
       {selected && (
         <div style={styles.overlay} onClick={() => setSelected(null)}>
           <div style={styles.modal} onClick={e => e.stopPropagation()}>
@@ -295,7 +289,6 @@ export default function VentasPage() {
               <span style={styles.totalValue}>${parseFloat(selected.totalAmount).toLocaleString('es-CO')}</span>
             </div>
 
-            {/* Pagos a crédito */}
             {selected.paymentType === 'CREDITO' && selected.creditPayments?.length > 0 && (
               <div style={styles.paymentsSection}>
                 <h3 style={styles.paymentsTitle}>Cuotas</h3>
