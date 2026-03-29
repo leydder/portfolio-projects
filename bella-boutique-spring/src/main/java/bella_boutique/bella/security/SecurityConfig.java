@@ -49,6 +49,7 @@ public class SecurityConfig {
                         .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers("/api/files/**").authenticated()
                         .requestMatchers("/api/users/**").hasAuthority("ADMIN")
+                        .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/products/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/products/**").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/products/**").authenticated()
