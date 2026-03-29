@@ -50,10 +50,6 @@ export default function VendedoresPage() {
   const [editSellerId, setEditSellerId] = useState(null);
   const [sellerError, setSellerError] = useState('');
 
-  // Reset data
-  const [showResetConfirm, setShowResetConfirm] = useState(false);
-  const [resetMsg, setResetMsg] = useState('');
-
   const loadData = async () => {
     const [salesRes, sellersRes] = await Promise.all([
       api.get('/api/sales'),
@@ -118,20 +114,6 @@ export default function VendedoresPage() {
     }
   };
 
-  // ── Reset data ──────────────────────────────────────────────────────────────
-  const handleReset = async () => {
-    try {
-      await api.delete('/api/admin/reset-data');
-      setShowResetConfirm(false);
-      setResetMsg('Datos eliminados correctamente.');
-      setSelectedVendedor(null);
-      loadData();
-      setTimeout(() => setResetMsg(''), 4000);
-    } catch {
-      alert('Error al limpiar datos');
-    }
-  };
-
   return (
     <div style={styles.page}>
 
@@ -142,14 +124,9 @@ export default function VendedoresPage() {
           <p style={styles.sub}>Rendimiento por vendedor</p>
         </div>
         {isAdmin && (
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <button style={styles.btnPrimary} onClick={openNewSeller}>+ Nuevo vendedor</button>
-            <button style={styles.btnDanger} onClick={() => setShowResetConfirm(true)}>Limpiar datos</button>
-          </div>
+          <button style={styles.btnPrimary} onClick={openNewSeller}>+ Nuevo vendedor</button>
         )}
       </div>
-
-      {resetMsg && <div style={styles.successBanner}>{resetMsg}</div>}
 
       {/* Listado de vendedores registrados (admin) */}
       {isAdmin && sellers.length > 0 && (
@@ -338,24 +315,6 @@ export default function VendedoresPage() {
         </div>
       )}
 
-      {/* Modal: confirmar limpieza */}
-      {showResetConfirm && (
-        <div style={styles.overlay}>
-          <div style={{ ...styles.modal, maxWidth: '420px', textAlign: 'center' }}>
-            <p style={{ fontSize: '40px', margin: '0 0 12px' }}>⚠️</p>
-            <h2 style={{ ...styles.modalTitle, marginBottom: '10px' }}>Limpiar todos los datos</h2>
-            <p style={{ color: '#7d4255', fontSize: '14px', marginBottom: '24px', lineHeight: '1.6' }}>
-              Esta acción eliminará <strong>todas las ventas, productos y vendedores</strong>.<br />
-              Los usuarios del sistema no se verán afectados.<br />
-              <strong>Esta acción no se puede deshacer.</strong>
-            </p>
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-              <button style={styles.btnSecondary} onClick={() => setShowResetConfirm(false)}>Cancelar</button>
-              <button style={styles.btnDanger} onClick={handleReset}>Sí, limpiar todo</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -367,8 +326,6 @@ const styles = {
   sub: { color: '#b08080', fontSize: '14px', margin: '4px 0 0' },
   btnPrimary: { padding: '9px 18px', background: '#3d2027', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' },
   btnSecondary: { padding: '9px 18px', background: '#fff', color: '#3d2027', border: '1.5px solid #3d2027', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' },
-  btnDanger: { padding: '9px 18px', background: '#c0394a', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' },
-  successBanner: { background: '#e8f5e9', color: '#2e7d32', borderRadius: '8px', padding: '10px 18px', marginBottom: '16px', fontSize: '14px', fontWeight: '600' },
   sellerListCard: { background: '#fff', borderRadius: '12px', padding: '16px 20px', marginBottom: '20px', boxShadow: '0 2px 8px rgba(61,32,39,0.06)' },
   sellerListTitle: { fontSize: '12px', fontWeight: '700', color: '#7d4255', textTransform: 'uppercase', letterSpacing: '0.5px', margin: '0 0 12px' },
   sellerChips: { display: 'flex', flexWrap: 'wrap', gap: '8px' },
