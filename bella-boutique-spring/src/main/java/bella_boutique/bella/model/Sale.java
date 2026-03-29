@@ -27,6 +27,7 @@ public class Sale {
     private String buyerName;
     private BigDecimal initialPayment;
     private BigDecimal remainingBalance;
+    private String sellerName;
 
     @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SaleItem> items;

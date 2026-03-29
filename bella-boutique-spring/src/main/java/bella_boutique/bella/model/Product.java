@@ -40,6 +40,8 @@ public class Product {
     @Column(nullable = false)
     private Integer stock;
 
+    private Integer initialStock;
+
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductSize> sizes;
 

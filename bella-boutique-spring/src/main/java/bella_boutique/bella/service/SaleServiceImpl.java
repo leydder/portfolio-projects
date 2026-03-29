@@ -125,6 +125,7 @@ public class SaleServiceImpl implements SaleService {
         sale.setPaymentType(paymentType);
         sale.setBuyerName(dto.getBuyerName());
         sale.setInitialPayment(dto.getInitialPayment());
+        sale.setSellerName(dto.getSellerName());
         return sale;
     }
 
@@ -208,6 +209,7 @@ public class SaleServiceImpl implements SaleService {
         dto.setBuyerName(sale.getBuyerName());
         dto.setInitialPayment(sale.getInitialPayment());
         dto.setRemainingBalance(sale.getRemainingBalance());
+        dto.setSellerName(sale.getSellerName());
 
         dto.setItems(sale.getItems().stream().map(item -> {
             SaleResponseDTO.SaleItemResponseDTO i = new SaleResponseDTO.SaleItemResponseDTO();

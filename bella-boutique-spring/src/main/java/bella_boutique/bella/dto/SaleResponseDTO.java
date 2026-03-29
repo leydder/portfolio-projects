@@ -14,6 +14,7 @@ public class SaleResponseDTO {
     private String buyerName;
     private BigDecimal initialPayment;
     private BigDecimal remainingBalance;
+    private String sellerName;
     private List<SaleItemResponseDTO> items;
     private List<CreditPaymentDTO> creditPayments;
 

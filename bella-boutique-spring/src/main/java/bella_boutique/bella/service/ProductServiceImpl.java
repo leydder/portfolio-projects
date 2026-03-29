@@ -60,6 +60,7 @@ public class ProductServiceImpl implements ProductService {
         if (dto.getSizes() != null && !dto.getSizes().isEmpty()) {
             saveSizes(product, dto.getSizes());
             updateTotalStock(product);
+            product.setInitialStock(product.getStock());
         }
         return toResponseDTO(productRepository.save(product));
     }
@@ -138,6 +139,7 @@ public class ProductServiceImpl implements ProductService {
         dto.setRating(product.getRating());
         dto.setSpecifications(product.getSpecifications());
         dto.setStock(product.getStock());
+        dto.setInitialStock(product.getInitialStock());
         dto.setCreatedAt(product.getCreatedAt());
 
         List<ProductSizeDTO> sizes = productSizeRepository.findByProductId(product.getId())
@@ -161,7 +163,9 @@ public class ProductServiceImpl implements ProductService {
         product.setPrice(dto.getPrice());
         product.setRating(dto.getRating());
         product.setSpecifications(dto.getSpecifications());
-        product.setStock(dto.getStock() != null ? dto.getStock() : 0);
+        int stockVal = dto.getStock() != null ? dto.getStock() : 0;
+        product.setStock(stockVal);
+        product.setInitialStock(stockVal);
         return product;
     }
 }

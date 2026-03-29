@@ -17,6 +17,7 @@ public class ProductResponseDTO {
     private Double rating;
     private Map<String, String> specifications;
     private Integer stock;
+    private Integer initialStock;
     private List<ProductSizeDTO> sizes;
     private LocalDateTime createdAt;
 }

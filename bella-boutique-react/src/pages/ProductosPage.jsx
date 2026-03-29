@@ -69,7 +69,7 @@ export default function ProductosPage() {
       const payload = {
         ...form,
         imageUrl,
-        price: parseFloat(form.price),
+        price: parseInt(form.price),
         stock: useSizes ? undefined : parseInt(form.stock),
         rating: parseFloat(form.rating) || 0,
         sizes: useSizes ? form.sizes.map(s => ({ ...s, stock: parseInt(s.stock) })) : undefined,
@@ -162,7 +162,7 @@ export default function ProductosPage() {
               </div>
               <div style={styles.formGroup}>
                 <label style={styles.label}>Precio *</label>
-                <input style={styles.input} type="number" step="0.01" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} required />
+                <input style={styles.input} type="number" step="1" min="1" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} required />
               </div>
               <div style={styles.formGroup}>
                 <label style={styles.label}>Rating (0-5)</label>
@@ -283,7 +283,8 @@ export default function ProductosPage() {
                 <th style={styles.th}>Ref.</th>
                 <th style={styles.th}>Nombre</th>
                 <th style={styles.th}>Precio</th>
-                <th style={styles.th}>Stock Total</th>
+                <th style={styles.th}>Stock Inicial</th>
+                <th style={styles.th}>Stock Real</th>
                 <th style={styles.th}>Tallas</th>
                 <th style={styles.th}>Acciones</th>
               </tr>
@@ -298,7 +299,12 @@ export default function ProductosPage() {
                       <span style={{ fontWeight: 600 }}>{p.name}</span>
                     </div>
                   </td>
-                  <td style={{ ...styles.td, color: '#c9a96e', fontWeight: 700 }}>${parseFloat(p.price).toLocaleString('es-CO')}</td>
+                  <td style={{ ...styles.td, color: '#c9a96e', fontWeight: 700 }}>${Math.round(parseFloat(p.price)).toLocaleString('es-CO')}</td>
+                  <td style={styles.td}>
+                    <span style={{ ...styles.stockBadge, background: '#fdf0ed', color: '#7d4255' }}>
+                      {p.initialStock ?? '—'}
+                    </span>
+                  </td>
                   <td style={styles.td}>
                     <span style={{ ...styles.stockBadge, background: p.stock === 0 ? '#fde8e8' : '#e8f5e9', color: p.stock === 0 ? '#e74c3c' : '#2e7d32' }}>
                       {p.stock}
@@ -334,20 +340,20 @@ export default function ProductosPage() {
 }
 
 const styles = {
-  page: { padding: '32px 40px', background: '#f8f7f4', minHeight: 'calc(100vh - 64px)' },
+  page: { padding: '32px 40px', background: '#fdf0ed', minHeight: 'calc(100vh - 64px)' },
   header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' },
-  title: { fontSize: '28px', fontWeight: '800', color: '#1a1a2e', margin: 0, fontFamily: 'Georgia, serif' },
+  title: { fontSize: '28px', fontWeight: '800', color: '#3d2027', margin: 0, fontFamily: 'Georgia, serif' },
   count: { color: '#888', fontSize: '14px', margin: '4px 0 0' },
   headerActions: { display: 'flex', gap: '12px', alignItems: 'center' },
   search: { padding: '10px 16px', border: '1.5px solid #e0e0e0', borderRadius: '8px', fontSize: '14px', width: '220px', outline: 'none', background: '#fff' },
   viewToggle: { display: 'flex', border: '1.5px solid #e0e0e0', borderRadius: '8px', overflow: 'hidden' },
   viewBtn: { padding: '8px 14px', background: '#fff', border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: '600', color: '#888' },
-  viewBtnActive: { background: '#1a1a2e', color: '#fff' },
-  btnPrimary: { padding: '10px 20px', background: '#1a1a2e', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' },
-  btnSecondary: { padding: '10px 20px', background: '#fff', color: '#1a1a2e', border: '1.5px solid #1a1a2e', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' },
+  viewBtnActive: { background: '#3d2027', color: '#fff' },
+  btnPrimary: { padding: '10px 20px', background: '#3d2027', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' },
+  btnSecondary: { padding: '10px 20px', background: '#fff', color: '#3d2027', border: '1.5px solid #3d2027', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' },
   overlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200 },
   modal: { background: '#fff', borderRadius: '16px', padding: '36px', width: '620px', maxWidth: '90vw', maxHeight: '90vh', overflowY: 'auto' },
-  modalTitle: { fontSize: '22px', fontWeight: '700', color: '#1a1a2e', margin: '0 0 24px', fontFamily: 'Georgia, serif' },
+  modalTitle: { fontSize: '22px', fontWeight: '700', color: '#3d2027', margin: '0 0 24px', fontFamily: 'Georgia, serif' },
   formGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' },
   formGroup: { display: 'flex', flexDirection: 'column', gap: '6px' },
   label: { fontSize: '12px', fontWeight: '600', color: '#555', letterSpacing: '0.5px', textTransform: 'uppercase' },
@@ -358,7 +364,7 @@ const styles = {
   btnAddSize: { background: 'none', border: '1.5px dashed #c9a96e', color: '#c9a96e', borderRadius: '8px', padding: '6px 14px', cursor: 'pointer', fontWeight: '600', fontSize: '12px', marginTop: '4px' },
   imageToggle: { display: 'flex', gap: '8px', marginBottom: '8px' },
   toggleBtn: { padding: '6px 16px', border: '1.5px solid #e0e0e0', borderRadius: '6px', background: '#fff', cursor: 'pointer', fontSize: '12px', fontWeight: '600', color: '#888' },
-  toggleActive: { border: '1.5px solid #1a1a2e', background: '#1a1a2e', color: '#fff' },
+  toggleActive: { border: '1.5px solid #3d2027', background: '#3d2027', color: '#fff' },
   fileUploadArea: { border: '2px dashed #e0e0e0', borderRadius: '8px', overflow: 'hidden', cursor: 'pointer' },
   fileInput: { display: 'none' },
   fileLabel: { display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '90px', cursor: 'pointer', color: '#888', fontSize: '14px' },
@@ -369,23 +375,23 @@ const styles = {
   imageContainer: { position: 'relative', height: '220px', background: '#f0ede8', overflow: 'hidden' },
   image: { width: '100%', height: '100%', objectFit: 'cover' },
   imagePlaceholder: { width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '60px' },
-  soldOut: { position: 'absolute', top: '12px', right: '12px', background: '#1a1a2e', color: '#fff', fontSize: '11px', fontWeight: '700', padding: '4px 10px', borderRadius: '12px' },
+  soldOut: { position: 'absolute', top: '12px', right: '12px', background: '#3d2027', color: '#fff', fontSize: '11px', fontWeight: '700', padding: '4px 10px', borderRadius: '12px' },
   cardBody: { padding: '16px' },
-  cardName: { fontWeight: '700', fontSize: '15px', color: '#1a1a2e', margin: '0 0 6px' },
+  cardName: { fontWeight: '700', fontSize: '15px', color: '#3d2027', margin: '0 0 6px' },
   cardSpec: { fontSize: '12px', color: '#888', margin: '2px 0' },
   cardFooter: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '10px 0 10px' },
   price: { fontWeight: '800', fontSize: '17px', color: '#c9a96e' },
   stock: { fontSize: '12px', color: '#888', background: '#f5f5f5', padding: '3px 8px', borderRadius: '12px' },
   refNumber: { fontSize: '11px', color: '#c9a96e', fontWeight: '700', letterSpacing: '1px', margin: '0 0 4px' },
   cardActions: { display: 'flex', gap: '8px' },
-  btnEdit: { flex: 1, padding: '8px', background: '#f0ede8', color: '#1a1a2e', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '12px' },
+  btnEdit: { flex: 1, padding: '8px', background: '#f0ede8', color: '#3d2027', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '12px' },
   btnDelete: { flex: 1, padding: '8px', background: '#fde8e8', color: '#e74c3c', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '12px' },
   sizesList: { display: 'flex', flexWrap: 'wrap', gap: '4px', margin: '6px 0' },
-  sizeChip: { background: '#f0ede8', color: '#1a1a2e', fontSize: '11px', fontWeight: '600', padding: '2px 8px', borderRadius: '10px' },
+  sizeChip: { background: '#f0ede8', color: '#3d2027', fontSize: '11px', fontWeight: '600', padding: '2px 8px', borderRadius: '10px' },
   // Table view
   tableWrapper: { background: '#fff', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' },
   table: { width: '100%', borderCollapse: 'collapse' },
-  th: { textAlign: 'left', padding: '14px 16px', background: '#f8f7f4', fontSize: '11px', fontWeight: '700', color: '#555', textTransform: 'uppercase', letterSpacing: '0.5px', borderBottom: '2px solid #e0e0e0' },
+  th: { textAlign: 'left', padding: '14px 16px', background: '#fdf0ed', fontSize: '11px', fontWeight: '700', color: '#555', textTransform: 'uppercase', letterSpacing: '0.5px', borderBottom: '2px solid #e0e0e0' },
   tr: { borderBottom: '1px solid #f5f5f5' },
   td: { padding: '12px 16px', fontSize: '14px', color: '#333', verticalAlign: 'middle' },
   refBadge: { fontSize: '11px', color: '#c9a96e', fontWeight: '700', letterSpacing: '1px' },

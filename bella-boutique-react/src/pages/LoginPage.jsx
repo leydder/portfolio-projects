@@ -27,10 +27,18 @@ export default function LoginPage() {
   return (
     <div style={styles.container}>
       <div style={styles.card}>
+        {/* Logo */}
         <div style={styles.logo}>
-          <span style={styles.logoText}>BELLA</span>
-          <span style={styles.logoSub}>BOUTIQUE</span>
+          <span style={styles.logoScript}>Bella</span>
+          <div style={styles.logoSubRow}>
+            <span style={styles.logoLine} />
+            <span style={styles.logoHeart}>♥</span>
+            <span style={styles.logoSub}>BOUTIQUE</span>
+            <span style={styles.logoHeart}>♥</span>
+            <span style={styles.logoLine} />
+          </div>
         </div>
+
         <p style={styles.subtitle}>Ingresa a tu cuenta</p>
 
         <form onSubmit={handleSubmit} style={styles.form}>
@@ -69,43 +77,62 @@ export default function LoginPage() {
 const styles = {
   container: {
     minHeight: '100vh',
-    background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+    background: 'linear-gradient(160deg, #fce4de 0%, #f9d5cc 50%, #f5c8bc 100%)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
   },
   card: {
     background: '#fff',
-    borderRadius: '16px',
-    padding: '48px 40px',
+    borderRadius: '20px',
+    padding: '52px 44px',
     width: '100%',
     maxWidth: '400px',
-    boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+    boxShadow: '0 20px 60px rgba(61,32,39,0.12)',
     textAlign: 'center',
+    border: '1px solid #f5ddd8',
   },
   logo: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    marginBottom: '8px',
+    marginBottom: '6px',
+    gap: '4px',
   },
-  logoText: {
-    fontSize: '32px',
-    fontWeight: '800',
-    letterSpacing: '8px',
-    color: '#1a1a2e',
-    fontFamily: 'Georgia, serif',
+  logoScript: {
+    fontFamily: "'Dancing Script', cursive",
+    fontSize: '42px',
+    fontWeight: '700',
+    color: '#3d2027',
+    lineHeight: '1',
+  },
+  logoSubRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '5px',
+  },
+  logoLine: {
+    display: 'inline-block',
+    width: '26px',
+    height: '1px',
+    background: '#3d2027',
+  },
+  logoHeart: {
+    color: '#3d2027',
+    fontSize: '10px',
+    lineHeight: '1',
   },
   logoSub: {
-    fontSize: '12px',
-    letterSpacing: '6px',
-    color: '#c9a96e',
-    fontWeight: '600',
+    fontSize: '10px',
+    letterSpacing: '4px',
+    fontWeight: '700',
+    color: '#3d2027',
   },
   subtitle: {
-    color: '#888',
+    color: '#b08080',
     fontSize: '14px',
     marginBottom: '32px',
+    marginTop: '16px',
   },
   form: {
     display: 'flex',
@@ -121,25 +148,27 @@ const styles = {
   label: {
     fontSize: '13px',
     fontWeight: '600',
-    color: '#444',
+    color: '#5a3540',
     letterSpacing: '0.5px',
   },
   input: {
     padding: '12px 16px',
-    border: '1.5px solid #e0e0e0',
+    border: '1.5px solid #f0d0ca',
     borderRadius: '8px',
     fontSize: '14px',
     outline: 'none',
     transition: 'border 0.2s',
+    color: '#3d2027',
+    background: '#fffaf9',
   },
   error: {
-    color: '#e74c3c',
+    color: '#c0394a',
     fontSize: '13px',
     margin: '0',
   },
   button: {
     padding: '14px',
-    background: '#1a1a2e',
+    background: '#3d2027',
     color: '#fff',
     border: 'none',
     borderRadius: '8px',

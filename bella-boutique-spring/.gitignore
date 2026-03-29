@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Base de datos y archivos subidos ###
+*.db
+uploads/

@@ -18,6 +18,8 @@ public class SaleRequestDTO {
     @NotNull(message = "El tipo de pago es obligatorio")
     private String paymentType; // CONTADO o CREDITO
 
+    private String sellerName;
+
     // Solo para crédito
     private String buyerName;
     private BigDecimal initialPayment;

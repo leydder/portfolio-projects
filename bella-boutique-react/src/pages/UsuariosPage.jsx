@@ -118,7 +118,7 @@ export default function UsuariosPage() {
             </div>
             <div style={styles.userInfo}>
               <span style={styles.username}>{u.username}</span>
-              <span style={{ ...styles.badge, background: u.role === 'ADMIN' ? '#1a1a2e' : '#c9a96e' }}>
+              <span style={{ ...styles.badge, background: u.role === 'ADMIN' ? '#3d2027' : '#c9a96e' }}>
                 {u.role}
               </span>
             </div>
@@ -136,15 +136,15 @@ export default function UsuariosPage() {
 }
 
 const styles = {
-  page: { padding: '32px 40px', background: '#f8f7f4', minHeight: 'calc(100vh - 64px)' },
+  page: { padding: '32px 40px', background: '#fdf0ed', minHeight: 'calc(100vh - 64px)' },
   header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' },
-  title: { fontSize: '28px', fontWeight: '800', color: '#1a1a2e', margin: 0, fontFamily: 'Georgia, serif' },
+  title: { fontSize: '28px', fontWeight: '800', color: '#3d2027', margin: 0, fontFamily: 'Georgia, serif' },
   count: { color: '#888', fontSize: '14px', margin: '4px 0 0' },
-  btnPrimary: { padding: '10px 20px', background: '#1a1a2e', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' },
-  btnSecondary: { padding: '10px 20px', background: '#fff', color: '#1a1a2e', border: '1.5px solid #1a1a2e', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' },
+  btnPrimary: { padding: '10px 20px', background: '#3d2027', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' },
+  btnSecondary: { padding: '10px 20px', background: '#fff', color: '#3d2027', border: '1.5px solid #3d2027', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' },
   overlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200 },
   modal: { background: '#fff', borderRadius: '16px', padding: '36px', width: '420px', maxWidth: '90vw' },
-  modalTitle: { fontSize: '22px', fontWeight: '700', color: '#1a1a2e', margin: '0 0 20px', fontFamily: 'Georgia, serif' },
+  modalTitle: { fontSize: '22px', fontWeight: '700', color: '#3d2027', margin: '0 0 20px', fontFamily: 'Georgia, serif' },
   form: { display: 'flex', flexDirection: 'column', gap: '16px' },
   formGroup: { display: 'flex', flexDirection: 'column', gap: '6px' },
   label: { fontSize: '12px', fontWeight: '600', color: '#555', letterSpacing: '0.5px', textTransform: 'uppercase' },
@@ -153,11 +153,11 @@ const styles = {
   modalActions: { display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '4px' },
   list: { display: 'flex', flexDirection: 'column', gap: '12px' },
   userCard: { background: '#fff', borderRadius: '12px', padding: '16px 24px', display: 'flex', alignItems: 'center', gap: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' },
-  avatar: { width: '44px', height: '44px', background: '#1a1a2e', color: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', fontSize: '18px', flexShrink: 0 },
+  avatar: { width: '44px', height: '44px', background: '#3d2027', color: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', fontSize: '18px', flexShrink: 0 },
   userInfo: { flex: 1, display: 'flex', alignItems: 'center', gap: '12px' },
-  username: { fontWeight: '700', color: '#1a1a2e', fontSize: '15px' },
+  username: { fontWeight: '700', color: '#3d2027', fontSize: '15px' },
   badge: { color: '#fff', fontSize: '11px', fontWeight: '700', padding: '3px 10px', borderRadius: '12px', letterSpacing: '1px' },
   userActions: { display: 'flex', gap: '8px' },
-  btnPassword: { background: '#f0ede8', color: '#1a1a2e', border: 'none', borderRadius: '6px', padding: '8px 14px', cursor: 'pointer', fontWeight: '600', fontSize: '12px' },
+  btnPassword: { background: '#f0ede8', color: '#3d2027', border: 'none', borderRadius: '6px', padding: '8px 14px', cursor: 'pointer', fontWeight: '600', fontSize: '12px' },
   btnDelete: { background: '#fde8e8', color: '#e74c3c', border: 'none', borderRadius: '6px', padding: '8px 14px', cursor: 'pointer', fontWeight: '600', fontSize: '12px' },
 };

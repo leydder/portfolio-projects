@@ -6,6 +6,7 @@ import VentasPage from './pages/VentasPage';
 import UsuariosPage from './pages/UsuariosPage';
 import HistorialPage from './pages/HistorialPage';
 import DeudoresPage from './pages/DeudoresPage';
+import VendedoresPage from './pages/VendedoresPage';
 import Navbar from './components/Navbar';
 
 function ProtectedRoute({ children, adminOnly = false }) {
@@ -52,6 +53,11 @@ function AppRoutes() {
       <Route path="/deudores" element={
         <ProtectedRoute>
           <Layout><DeudoresPage /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/vendedores" element={
+        <ProtectedRoute adminOnly>
+          <Layout><VendedoresPage /></Layout>
         </ProtectedRoute>
       } />
       <Route path="*" element={<Navigate to={user ? '/productos' : '/login'} />} />
