@@ -74,8 +74,8 @@ public class ProductServiceImpl implements ProductService {
         product.setName(dto.getName());
         product.setImageUrl(dto.getImageUrl());
         product.setDescription(dto.getDescription());
+        product.setPurchasePrice(dto.getPurchasePrice());
         product.setPrice(dto.getPrice());
-        product.setRating(dto.getRating());
         product.setSpecifications(dto.getSpecifications());
 
         if (dto.getSizes() != null) {
@@ -135,8 +135,8 @@ public class ProductServiceImpl implements ProductService {
         dto.setName(product.getName());
         dto.setImageUrl(product.getImageUrl());
         dto.setDescription(product.getDescription());
+        dto.setPurchasePrice(product.getPurchasePrice());
         dto.setPrice(product.getPrice());
-        dto.setRating(product.getRating());
         dto.setSpecifications(product.getSpecifications());
         dto.setStock(product.getStock());
         dto.setInitialStock(product.getInitialStock());
@@ -160,8 +160,8 @@ public class ProductServiceImpl implements ProductService {
         product.setName(dto.getName());
         product.setImageUrl(dto.getImageUrl());
         product.setDescription(dto.getDescription());
+        product.setPurchasePrice(dto.getPurchasePrice());
         product.setPrice(dto.getPrice());
-        product.setRating(dto.getRating());
         product.setSpecifications(dto.getSpecifications());
         int stockVal = dto.getStock() != null ? dto.getStock() : 0;
         product.setStock(stockVal);

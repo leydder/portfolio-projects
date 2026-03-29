@@ -3,7 +3,7 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 
 const EMPTY_FORM = {
-  referenceNumber: '', name: '', price: '', stock: '', rating: '',
+  referenceNumber: '', name: '', purchasePrice: '', price: '', stock: '',
   description: '', imageUrl: '',
   specifications: { talla: '', color: '', material: '' },
   sizes: [],
@@ -69,9 +69,9 @@ export default function ProductosPage() {
       const payload = {
         ...form,
         imageUrl,
+        purchasePrice: form.purchasePrice ? parseInt(form.purchasePrice) : undefined,
         price: parseInt(form.price),
         stock: useSizes ? undefined : parseInt(form.stock),
-        rating: parseFloat(form.rating) || 0,
         sizes: useSizes ? form.sizes.map(s => ({ ...s, stock: parseInt(s.stock) })) : undefined,
       };
 
@@ -91,8 +91,8 @@ export default function ProductosPage() {
     const hasSizes = p.sizes && p.sizes.length > 0;
     setForm({
       referenceNumber: p.referenceNumber || '',
-      name: p.name, price: p.price, stock: p.stock,
-      rating: p.rating || '', description: p.description || '',
+      name: p.name, purchasePrice: p.purchasePrice || '', price: p.price, stock: p.stock,
+      description: p.description || '',
       imageUrl: p.imageUrl || '',
       specifications: p.specifications || { talla: '', color: '', material: '' },
       sizes: p.sizes || [],
@@ -161,12 +161,12 @@ export default function ProductosPage() {
                 <input style={styles.input} value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required />
               </div>
               <div style={styles.formGroup}>
-                <label style={styles.label}>Precio *</label>
-                <input style={styles.input} type="number" step="1" min="1" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} required />
+                <label style={styles.label}>Precio de compra</label>
+                <input style={styles.input} type="number" step="1" min="0" value={form.purchasePrice} onChange={e => setForm({ ...form, purchasePrice: e.target.value })} placeholder="Costo del proveedor" />
               </div>
               <div style={styles.formGroup}>
-                <label style={styles.label}>Rating (0-5)</label>
-                <input style={styles.input} type="number" step="0.1" min="0" max="5" value={form.rating} onChange={e => setForm({ ...form, rating: e.target.value })} />
+                <label style={styles.label}>Precio de venta *</label>
+                <input style={styles.input} type="number" step="1" min="1" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} required />
               </div>
 
               {/* Toggle tallas */}
@@ -282,7 +282,8 @@ export default function ProductosPage() {
               <tr>
                 <th style={styles.th}>Ref.</th>
                 <th style={styles.th}>Nombre</th>
-                <th style={styles.th}>Precio</th>
+                <th style={styles.th}>P. Compra</th>
+                <th style={styles.th}>P. Venta</th>
                 <th style={styles.th}>Stock Inicial</th>
                 <th style={styles.th}>Stock Real</th>
                 <th style={styles.th}>Tallas</th>
@@ -299,6 +300,7 @@ export default function ProductosPage() {
                       <span style={{ fontWeight: 600 }}>{p.name}</span>
                     </div>
                   </td>
+                  <td style={styles.td}>{p.purchasePrice ? `$${Math.round(parseFloat(p.purchasePrice)).toLocaleString('es-CO')}` : <span style={{ color: '#ccc' }}>—</span>}</td>
                   <td style={{ ...styles.td, color: '#c9a96e', fontWeight: 700 }}>${Math.round(parseFloat(p.price)).toLocaleString('es-CO')}</td>
                   <td style={styles.td}>
                     <span style={{ ...styles.stockBadge, background: '#fdf0ed', color: '#7d4255' }}>

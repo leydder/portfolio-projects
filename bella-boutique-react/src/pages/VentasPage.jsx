@@ -8,7 +8,7 @@ export default function VentasPage() {
   const [products, setProducts] = useState([]);
   const [sellers, setSellers] = useState([]);
   const [showForm, setShowForm] = useState(false);
-  const [items, setItems] = useState([{ productId: '', productSizeId: '', quantity: 1 }]);
+  const [items, setItems] = useState([{ productId: '', productSizeId: '', quantity: 1, unitPrice: '' }]);
   const [paymentType, setPaymentType] = useState('CONTADO');
   const [buyerName, setBuyerName] = useState('');
   const [initialPayment, setInitialPayment] = useState('');
@@ -35,12 +35,12 @@ export default function VentasPage() {
   useEffect(() => { loadData(); }, []);
 
   // ── Items del formulario ──────────────────────────────────────────────────
-  const addItem = () => setItems([...items, { productId: '', productSizeId: '', quantity: 1 }]);
+  const addItem = () => setItems([...items, { productId: '', productSizeId: '', quantity: 1, unitPrice: '' }]);
   const removeItem = (i) => setItems(items.filter((_, idx) => idx !== i));
   const updateItem = (i, field, value) => {
     const updated = [...items];
     updated[i] = { ...updated[i], [field]: value };
-    if (field === 'productId') updated[i].productSizeId = '';
+    if (field === 'productId') { updated[i].productSizeId = ''; updated[i].unitPrice = ''; }
     setItems(updated);
   };
   const getSizesForItem = (item) => products.find(p => p.id === parseInt(item.productId))?.sizes || [];
@@ -82,6 +82,7 @@ export default function VentasPage() {
           productId: parseInt(it.productId),
           productSizeId: it.productSizeId ? parseInt(it.productSizeId) : undefined,
           quantity: parseInt(it.quantity),
+          unitPrice: it.unitPrice ? parseInt(it.unitPrice) : undefined,
         })),
       };
       await api.post('/api/sales', payload);
@@ -94,7 +95,7 @@ export default function VentasPage() {
 
   const closeForm = () => {
     setShowForm(false);
-    setItems([{ productId: '', productSizeId: '', quantity: 1 }]);
+    setItems([{ productId: '', productSizeId: '', quantity: 1, unitPrice: '' }]);
     setPaymentType('CONTADO');
     setBuyerName('');
     setInitialPayment('');
@@ -137,6 +138,11 @@ export default function VentasPage() {
   const totalVentas = sales.reduce((acc, s) => acc + parseFloat(s.totalAmount), 0);
   const saldoPendiente = sales.filter(s => s.paymentType === 'CREDITO')
     .reduce((acc, s) => acc + parseFloat(s.remainingBalance || 0), 0);
+  const gananciaTotal = sales.reduce((acc, s) =>
+    acc + s.items.reduce((a, i) => {
+      if (!i.purchasePrice) return a;
+      return a + (parseFloat(i.unitPrice) - parseFloat(i.purchasePrice)) * i.quantity;
+    }, 0), 0);
 
   return (
     <div style={styles.page}>
@@ -157,6 +163,7 @@ export default function VentasPage() {
           { label: 'Contado', val: sales.filter(s => s.paymentType === 'CONTADO').length, color: '#27ae60' },
           { label: 'Crédito', val: sales.filter(s => s.paymentType === 'CREDITO').length, color: '#e67e22' },
           { label: 'Saldo por cobrar', val: `$${Math.round(saldoPendiente).toLocaleString('es-CO')}`, color: '#e74c3c' },
+          { label: 'Ganancia bruta', val: `$${Math.round(gananciaTotal).toLocaleString('es-CO')}`, color: '#27ae60' },
         ].map(({ label, val, color }) => (
           <div key={label} style={styles.statCard}>
             <p style={styles.statLabel}>{label}</p>
@@ -308,6 +315,16 @@ export default function VentasPage() {
                           <button type="button" style={styles.btnRemoveItem} onClick={() => removeItem(i)}>✕</button>
                         )}
                       </div>
+                      {item.productId && (
+                        <div style={{ marginTop: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <label style={{ ...styles.label, margin: 0, whiteSpace: 'nowrap' }}>Precio venta ($)</label>
+                          <input style={{ ...styles.input, width: '140px' }} type="number" min="0" step="1"
+                            placeholder={(() => { const p = products.find(p => p.id === parseInt(item.productId)); return p ? Math.round(parseFloat(p.price)).toString() : ''; })()}
+                            value={item.unitPrice}
+                            onChange={e => updateItem(i, 'unitPrice', e.target.value)} />
+                          <span style={{ fontSize: '11px', color: '#b08080' }}>vacío = precio del producto</span>
+                        </div>
+                      )}
                       {sizes.length > 0 && (
                         <select style={{ ...styles.select, marginTop: '6px', width: '100%' }}
                           value={item.productSizeId} onChange={e => updateItem(i, 'productSizeId', e.target.value)} required>
@@ -439,6 +456,7 @@ function SaleCard({ sale, onSelect, compact }) {
   const fecha = new Date(sale.saleDate).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
   const total = Math.round(parseFloat(sale.totalAmount));
   const saldo = Math.round(parseFloat(sale.remainingBalance || 0));
+  const inicial = Math.round(parseFloat(sale.initialPayment || 0));
   return (
     <div style={{ ...colStyles.card, ...(compact ? colStyles.cardCompact : {}) }} onClick={() => onSelect(sale)}>
       <div style={colStyles.cardTop}>
@@ -452,12 +470,17 @@ function SaleCard({ sale, onSelect, compact }) {
       {sale.buyerName && <p style={colStyles.cardBuyer}>Comprador: {sale.buyerName}</p>}
       <div style={colStyles.cardBottom}>
         <span style={colStyles.cardTotal}>${total.toLocaleString('es-CO')}</span>
-        {sale.paymentType === 'CREDITO' && saldo > 0 && (
-          <span style={colStyles.pendingBadge}>Saldo: ${saldo.toLocaleString('es-CO')}</span>
-        )}
-        {sale.paymentType === 'CREDITO' && saldo === 0 && (
-          <span style={colStyles.paidBadge}>✓ Saldado</span>
-        )}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '3px' }}>
+          {sale.paymentType === 'CREDITO' && inicial > 0 && (
+            <span style={colStyles.inicialBadge}>Inicial: ${inicial.toLocaleString('es-CO')}</span>
+          )}
+          {sale.paymentType === 'CREDITO' && saldo > 0 && (
+            <span style={colStyles.pendingBadge}>Saldo: ${saldo.toLocaleString('es-CO')}</span>
+          )}
+          {sale.paymentType === 'CREDITO' && saldo === 0 && (
+            <span style={colStyles.paidBadge}>✓ Saldado</span>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -544,6 +567,7 @@ const colStyles = {
   cardBuyer: { fontSize: '12px', color: '#9e7070', margin: '1px 0' },
   cardBottom: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' },
   cardTotal: { fontWeight: '800', color: '#c9a96e', fontSize: '16px' },
+  inicialBadge: { background: '#e8f0fe', color: '#3d7de8', fontSize: '11px', fontWeight: '700', padding: '2px 8px', borderRadius: '10px' },
   pendingBadge: { background: '#fde8e8', color: '#e74c3c', fontSize: '11px', fontWeight: '700', padding: '2px 8px', borderRadius: '10px' },
   paidBadge: { background: '#e8f5e9', color: '#2e7d32', fontSize: '11px', fontWeight: '700', padding: '2px 8px', borderRadius: '10px' },
 };

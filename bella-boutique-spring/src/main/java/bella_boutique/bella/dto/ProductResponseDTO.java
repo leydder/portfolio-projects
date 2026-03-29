@@ -13,8 +13,8 @@ public class ProductResponseDTO {
     private String name;
     private String imageUrl;
     private String description;
+    private BigDecimal purchasePrice;
     private BigDecimal price;
-    private Double rating;
     private Map<String, String> specifications;
     private Integer stock;
     private Integer initialStock;

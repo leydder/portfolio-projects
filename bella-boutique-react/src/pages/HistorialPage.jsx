@@ -58,7 +58,13 @@ export default function HistorialPage() {
     const totalCuotas = g.pagosCuotas.reduce((acc, { pago }) => acc + parseFloat(pago.amount), 0);
     const pendiente = g.sales.reduce((acc, s) => acc + parseFloat(s.remainingBalance || 0), 0);
     const unidades = g.sales.reduce((acc, s) => acc + s.items.reduce((a, i) => a + i.quantity, 0), 0);
-    return { totalVentas, totalCuotas, pendiente, unidades };
+    const ganancia = g.sales.reduce((acc, s) =>
+      acc + s.items.reduce((a, i) => {
+        if (!i.purchasePrice) return a;
+        return a + (parseFloat(i.unitPrice) - parseFloat(i.purchasePrice)) * i.quantity;
+      }, 0), 0);
+    const margen = totalVentas > 0 ? (ganancia / totalVentas * 100) : 0;
+    return { totalVentas, totalCuotas, pendiente, unidades, ganancia, margen };
   };
 
   return (
@@ -132,7 +138,7 @@ export default function HistorialPage() {
               <h2 style={styles.detailTitle}>{MESES[selectedGrupo.month]} {selectedGrupo.year}</h2>
 
               {(() => {
-                const { totalVentas, totalCuotas, pendiente, unidades } = statsGrupo(selectedGrupo);
+                const { totalVentas, totalCuotas, pendiente, unidades, ganancia, margen } = statsGrupo(selectedGrupo);
                 return (
                   <div style={styles.resumenRow}>
                     {selectedGrupo.sales.length > 0 && (
@@ -165,6 +171,18 @@ export default function HistorialPage() {
                         <p style={{ ...styles.resumenVal, color: '#e74c3c' }}>${pendiente.toLocaleString('es-CO')}</p>
                       </div>
                     )}
+                    {ganancia !== 0 && (
+                      <div style={styles.resumenCard}>
+                        <p style={styles.resumenLabel}>Ganancia bruta</p>
+                        <p style={{ ...styles.resumenVal, color: ganancia >= 0 ? '#27ae60' : '#e74c3c' }}>${Math.round(ganancia).toLocaleString('es-CO')}</p>
+                      </div>
+                    )}
+                    {ganancia !== 0 && totalVentas > 0 && (
+                      <div style={styles.resumenCard}>
+                        <p style={styles.resumenLabel}>Margen %</p>
+                        <p style={{ ...styles.resumenVal, color: margen >= 0 ? '#27ae60' : '#e74c3c' }}>{Math.round(margen)}%</p>
+                      </div>
+                    )}
                   </div>
                 );
               })()}
@@ -183,7 +201,9 @@ export default function HistorialPage() {
                           <th style={styles.th}>Producto</th>
                           <th style={styles.th}>Talla</th>
                           <th style={styles.th}>Cant.</th>
-                          <th style={styles.th}>Precio Unit.</th>
+                          <th style={styles.th}>P. Compra</th>
+                          <th style={styles.th}>P. Venta</th>
+                          <th style={styles.th}>Ganancia</th>
                           <th style={styles.th}>Subtotal</th>
                           <th style={styles.th}>Tipo pago</th>
                           <th style={styles.th}>Saldo</th>
@@ -205,7 +225,7 @@ export default function HistorialPage() {
                               )}
                               {idx === 0 && (
                                 <td style={styles.td} rowSpan={sale.items.length}>
-                                  <span style={styles.sellerBadge}>{sale.sellerUsername || '—'}</span>
+                                  <span style={styles.sellerBadge}>{sale.sellerName || '—'}</span>
                                 </td>
                               )}
                               <td style={styles.td}>
@@ -214,9 +234,17 @@ export default function HistorialPage() {
                               </td>
                               <td style={styles.td}>{item.sizeName || '—'}</td>
                               <td style={{ ...styles.td, textAlign: 'center' }}>{item.quantity}</td>
-                              <td style={styles.td}>${parseFloat(item.unitPrice).toLocaleString('es-CO')}</td>
+                              <td style={{ ...styles.td, color: '#888' }}>
+                                {item.purchasePrice ? `$${Math.round(parseFloat(item.purchasePrice)).toLocaleString('es-CO')}` : '—'}
+                              </td>
+                              <td style={styles.td}>${Math.round(parseFloat(item.unitPrice)).toLocaleString('es-CO')}</td>
+                              <td style={{ ...styles.td, color: item.purchasePrice ? '#27ae60' : '#ccc', fontWeight: 600 }}>
+                                {item.purchasePrice
+                                  ? `$${Math.round((parseFloat(item.unitPrice) - parseFloat(item.purchasePrice)) * item.quantity).toLocaleString('es-CO')}`
+                                  : '—'}
+                              </td>
                               <td style={{ ...styles.td, fontWeight: 700 }}>
-                                ${(item.quantity * parseFloat(item.unitPrice)).toLocaleString('es-CO')}
+                                ${Math.round(item.quantity * parseFloat(item.unitPrice)).toLocaleString('es-CO')}
                               </td>
                               {idx === 0 && (
                                 <td style={styles.td} rowSpan={sale.items.length}>

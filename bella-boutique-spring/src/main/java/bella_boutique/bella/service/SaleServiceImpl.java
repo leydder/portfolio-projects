@@ -57,7 +57,7 @@ public class SaleServiceImpl implements SaleService {
 
             SaleItem item = buildSaleItem(sale, product, itemDTO);
             items.add(item);
-            total = total.add(product.getPrice().multiply(BigDecimal.valueOf(itemDTO.getQuantity())));
+            total = total.add(item.getUnitPrice().multiply(BigDecimal.valueOf(itemDTO.getQuantity())));
         }
 
         sale.setItems(items);
@@ -134,7 +134,9 @@ public class SaleServiceImpl implements SaleService {
         item.setSale(sale);
         item.setProduct(product);
         item.setQuantity(itemDTO.getQuantity());
-        item.setUnitPrice(product.getPrice());
+        BigDecimal unitPrice = (itemDTO.getUnitPrice() != null) ? itemDTO.getUnitPrice() : product.getPrice();
+        item.setUnitPrice(unitPrice);
+        item.setPurchasePrice(product.getPurchasePrice());
 
         if (itemDTO.getProductSizeId() != null) {
             deductSizeStock(item, product, itemDTO);
@@ -219,6 +221,7 @@ public class SaleServiceImpl implements SaleService {
             i.setReferenceNumber(item.getProduct().getReferenceNumber());
             i.setQuantity(item.getQuantity());
             i.setUnitPrice(item.getUnitPrice());
+            i.setPurchasePrice(item.getPurchasePrice());
             i.setSizeName(item.getSizeName());
             return i;
         }).toList());

@@ -20,13 +20,11 @@ public class ProductRequestDTO {
     private String imageUrl;
     private String description;
 
-    @NotNull(message = "El precio es obligatorio")
+    private BigDecimal purchasePrice;
+
+    @NotNull(message = "El precio de venta es obligatorio")
     @DecimalMin(value = "0.01", message = "El precio debe ser mayor que 0")
     private BigDecimal price;
-
-    @DecimalMin(value = "0.0", message = "El rating mínimo es 0.0")
-    @DecimalMax(value = "5.0", message = "El rating máximo es 5.0")
-    private Double rating;
 
     private Map<String, String> specifications;
 

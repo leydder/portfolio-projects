@@ -25,7 +25,9 @@ public class SaleItem {
     private Integer quantity;
 
     @Column(nullable = false)
-    private BigDecimal unitPrice;
+    private BigDecimal unitPrice;   // precio al que se vendió
+
+    private BigDecimal purchasePrice; // precio de compra snapshot
 
     private String sizeName;
 

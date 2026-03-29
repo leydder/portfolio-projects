@@ -35,6 +35,8 @@ public class SaleRequestDTO {
         @Positive(message = "La cantidad debe ser mayor que 0")
         private Integer quantity;
 
+        private java.math.BigDecimal unitPrice; // opcional: sobreescribe el precio del producto
+
         private Long productSizeId;
         private String sizeName;
     }

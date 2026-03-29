@@ -26,6 +26,7 @@ public class SaleResponseDTO {
         private String referenceNumber;
         private Integer quantity;
         private BigDecimal unitPrice;
+        private BigDecimal purchasePrice;
         private String sizeName;
     }
 }

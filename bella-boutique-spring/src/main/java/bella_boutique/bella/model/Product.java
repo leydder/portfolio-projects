@@ -26,10 +26,10 @@ public class Product {
     private String imageUrl;
     private String description;
 
-    @Column(nullable = false)
-    private BigDecimal price;
+    private BigDecimal purchasePrice;
 
-    private Double rating;
+    @Column(nullable = false)
+    private BigDecimal price; // precio de venta
 
     @ElementCollection
     @CollectionTable(name = "product_specifications", joinColumns = @JoinColumn(name = "product_id"))
