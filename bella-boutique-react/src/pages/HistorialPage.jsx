@@ -58,11 +58,14 @@ export default function HistorialPage() {
     const totalCuotas = g.pagosCuotas.reduce((acc, { pago }) => acc + parseFloat(pago.amount), 0);
     const pendiente = g.sales.reduce((acc, s) => acc + parseFloat(s.remainingBalance || 0), 0);
     const unidades = g.sales.reduce((acc, s) => acc + s.items.reduce((a, i) => a + i.quantity, 0), 0);
-    const ganancia = g.sales.reduce((acc, s) =>
-      acc + s.items.reduce((a, i) => {
+    const ganancia = g.sales.reduce((acc, s) => {
+      // Crédito: solo cuenta si está completamente saldado
+      if (s.paymentType === 'CREDITO' && parseFloat(s.remainingBalance || 0) > 0) return acc;
+      return acc + s.items.reduce((a, i) => {
         if (!i.purchasePrice) return a;
         return a + (parseFloat(i.unitPrice) - parseFloat(i.purchasePrice)) * i.quantity;
-      }, 0), 0);
+      }, 0);
+    }, 0);
     const margen = totalVentas > 0 ? (ganancia / totalVentas * 100) : 0;
     return { totalVentas, totalCuotas, pendiente, unidades, ganancia, margen };
   };

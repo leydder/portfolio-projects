@@ -22,7 +22,6 @@ public class CreditPayment {
     @Column(nullable = false)
     private BigDecimal amount;
 
-    @Column(nullable = false)
     private LocalDate dueDate;
 
     private boolean paid = false;

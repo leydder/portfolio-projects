@@ -3,6 +3,7 @@ package bella_boutique.bella.service;
 import bella_boutique.bella.dto.CreditPaymentDTO;
 import bella_boutique.bella.dto.SaleRequestDTO;
 import bella_boutique.bella.dto.SaleResponseDTO;
+import bella_boutique.bella.dto.SettleRequestDTO;
 import bella_boutique.bella.exception.InsufficientStockException;
 import bella_boutique.bella.exception.InvalidRequestException;
 import bella_boutique.bella.exception.ResourceNotFoundException;
@@ -95,6 +96,11 @@ public class SaleServiceImpl implements SaleService {
 
         CreditPayment payment = creditPaymentRepository.findById(dto.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Pago no encontrado"));
+
+        // Permitir sobrescribir el monto de la cuota
+        if (dto.getAmount() != null && dto.getAmount().signum() > 0) {
+            payment.setAmount(dto.getAmount());
+        }
         payment.setPaid(true);
         payment.setPaidDate(java.time.LocalDate.now());
         creditPaymentRepository.save(payment);
@@ -104,7 +110,75 @@ public class SaleServiceImpl implements SaleService {
                 .map(CreditPayment::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal inicial = sale.getInitialPayment() != null ? sale.getInitialPayment() : BigDecimal.ZERO;
-        sale.setRemainingBalance(sale.getTotalAmount().subtract(inicial).subtract(totalPagado));
+        BigDecimal nuevoSaldo = sale.getTotalAmount().subtract(inicial).subtract(totalPagado);
+
+        if (nuevoSaldo.compareTo(BigDecimal.ZERO) <= 0) {
+            // Cerrar todas las cuotas pendientes restantes
+            List<CreditPayment> restantes = creditPaymentRepository.findBySaleId(saleId).stream()
+                    .filter(cp -> !cp.isPaid())
+                    .toList();
+            restantes.forEach(cp -> {
+                cp.setPaid(true);
+                cp.setPaidDate(java.time.LocalDate.now());
+                cp.setAmount(BigDecimal.ZERO);
+            });
+            creditPaymentRepository.saveAll(restantes);
+            sale.setRemainingBalance(BigDecimal.ZERO);
+        } else {
+            sale.setRemainingBalance(nuevoSaldo);
+        }
+        saleRepository.save(sale);
+
+        return toResponseDTO(sale);
+    }
+
+    @Override
+    @Transactional
+    public SaleResponseDTO settleDebt(Long saleId, SettleRequestDTO dto) {
+        Sale sale = saleRepository.findById(saleId)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format(SALE_NOT_FOUND, saleId)));
+
+        if (sale.getPaymentType() != PaymentType.CREDITO) {
+            throw new InvalidRequestException("Solo se puede liquidar una venta a crédito");
+        }
+        if (sale.getRemainingBalance().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new InvalidRequestException("Esta venta ya está saldada");
+        }
+
+        BigDecimal saldoPendiente = sale.getRemainingBalance();
+        boolean esDescuento = dto.getAmount().compareTo(saldoPendiente) < 0;
+
+        String nota = (dto.getNotes() != null && !dto.getNotes().isBlank())
+                ? dto.getNotes()
+                : (esDescuento
+                    ? "Cancelación de deuda por decisión de gerencia. Acordado: $" + dto.getAmount().toPlainString()
+                      + " de $" + saldoPendiente.toPlainString() + " pendiente."
+                    : "Pago total de deuda.");
+
+        List<CreditPayment> pendientes = creditPaymentRepository.findBySaleId(saleId).stream()
+                .filter(cp -> !cp.isPaid())
+                .toList();
+
+        if (!pendientes.isEmpty()) {
+            // Primera cuota recibe el monto y la nota del acuerdo
+            CreditPayment primera = pendientes.get(0);
+            primera.setAmount(dto.getAmount());
+            primera.setPaid(true);
+            primera.setPaidDate(java.time.LocalDate.now());
+            primera.setNotes(nota);
+            creditPaymentRepository.save(primera);
+
+            // Resto se zerean y marcan pagadas
+            List<CreditPayment> resto = pendientes.stream().skip(1).toList();
+            resto.forEach(cp -> {
+                cp.setPaid(true);
+                cp.setPaidDate(java.time.LocalDate.now());
+                cp.setAmount(BigDecimal.ZERO);
+            });
+            creditPaymentRepository.saveAll(resto);
+        }
+
+        sale.setRemainingBalance(BigDecimal.ZERO);
         saleRepository.save(sale);
 
         return toResponseDTO(sale);

@@ -36,6 +36,7 @@ export default function Navbar() {
           { to: '/deudores', label: 'Deudores' },
           ...(user?.role === 'ADMIN' ? [
             { to: '/vendedores', label: 'Vendedores' },
+            { to: '/ganancias', label: 'Ganancias' },
             { to: '/usuarios', label: 'Usuarios' },
           ] : []),
         ].map(({ to, label }) => (

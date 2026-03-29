@@ -7,6 +7,7 @@ import UsuariosPage from './pages/UsuariosPage';
 import HistorialPage from './pages/HistorialPage';
 import DeudoresPage from './pages/DeudoresPage';
 import VendedoresPage from './pages/VendedoresPage';
+import GananciasPage from './pages/GananciasPage';
 import Navbar from './components/Navbar';
 
 function ProtectedRoute({ children, adminOnly = false }) {
@@ -58,6 +59,11 @@ function AppRoutes() {
       <Route path="/vendedores" element={
         <ProtectedRoute adminOnly>
           <Layout><VendedoresPage /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/ganancias" element={
+        <ProtectedRoute adminOnly>
+          <Layout><GananciasPage /></Layout>
         </ProtectedRoute>
       } />
       <Route path="*" element={<Navigate to={user ? '/productos' : '/login'} />} />

@@ -40,7 +40,7 @@ export default function VentasPage() {
   const updateItem = (i, field, value) => {
     const updated = [...items];
     updated[i] = { ...updated[i], [field]: value };
-    if (field === 'productId') { updated[i].productSizeId = ''; updated[i].unitPrice = ''; }
+    if (field === 'productId') { updated[i] = { ...updated[i], productSizeId: '', unitPrice: '' }; }
     setItems(updated);
   };
   const getSizesForItem = (item) => products.find(p => p.id === parseInt(item.productId))?.sizes || [];
@@ -67,6 +67,47 @@ export default function VentasPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    // Validación: stock disponible
+    for (const it of items) {
+      if (!it.productId) continue;
+      const product = products.find(p => p.id === parseInt(it.productId));
+      if (!product) continue;
+      const qty = parseInt(it.quantity) || 0;
+      if (it.productSizeId) {
+        const size = (product.sizes || []).find(s => s.id === parseInt(it.productSizeId));
+        if (size && qty > size.stock) {
+          setError(`Stock insuficiente para "${product.name}" talla ${size.sizeName}. Disponible: ${size.stock}`);
+          return;
+        }
+      } else {
+        if (qty > product.stock) {
+          setError(`Stock insuficiente para "${product.name}". Disponible: ${product.stock}`);
+          return;
+        }
+      }
+    }
+
+    // Validación: crédito — inicial + cuotas >= total estimado
+    if (paymentType === 'CREDITO') {
+      const estimatedTotal = items.reduce((acc, it) => {
+        const p = products.find(p => p.id === parseInt(it.productId));
+        if (!p) return acc;
+        const precio = it.unitPrice ? parseInt(it.unitPrice) : Math.round(parseFloat(p.price));
+        return acc + precio * (parseInt(it.quantity) || 1);
+      }, 0);
+      const totalCuotas = creditPayments.reduce((acc, cp) => acc + (parseInt(cp.amount) || 0), 0);
+      const totalPagado = (parseInt(initialPayment) || 0) + totalCuotas;
+      if (totalPagado > estimatedTotal) {
+        setError(`La suma de cuotas + inicial ($${totalPagado.toLocaleString('es-CO')}) excede el total de la venta ($${estimatedTotal.toLocaleString('es-CO')}).`);
+        return;
+      }
+      if (totalPagado < estimatedTotal) {
+        setError(`La inicial + cuotas ($${totalPagado.toLocaleString('es-CO')}) no cubre el total de la venta ($${estimatedTotal.toLocaleString('es-CO')}). Faltan $${(estimatedTotal - totalPagado).toLocaleString('es-CO')}.`);
+        return;
+      }
+    }
+
     try {
       const payload = {
         paymentType,
@@ -138,11 +179,14 @@ export default function VentasPage() {
   const totalVentas = sales.reduce((acc, s) => acc + parseFloat(s.totalAmount), 0);
   const saldoPendiente = sales.filter(s => s.paymentType === 'CREDITO')
     .reduce((acc, s) => acc + parseFloat(s.remainingBalance || 0), 0);
-  const gananciaTotal = sales.reduce((acc, s) =>
-    acc + s.items.reduce((a, i) => {
+  const gananciaTotal = sales.reduce((acc, s) => {
+    // Crédito: solo cuenta si está completamente saldado
+    if (s.paymentType === 'CREDITO' && parseFloat(s.remainingBalance || 0) > 0) return acc;
+    return acc + s.items.reduce((a, i) => {
       if (!i.purchasePrice) return a;
       return a + (parseFloat(i.unitPrice) - parseFloat(i.purchasePrice)) * i.quantity;
-    }, 0), 0);
+    }, 0);
+  }, 0);
 
   return (
     <div style={styles.page}>
@@ -315,16 +359,29 @@ export default function VentasPage() {
                           <button type="button" style={styles.btnRemoveItem} onClick={() => removeItem(i)}>✕</button>
                         )}
                       </div>
-                      {item.productId && (
-                        <div style={{ marginTop: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <label style={{ ...styles.label, margin: 0, whiteSpace: 'nowrap' }}>Precio venta ($)</label>
-                          <input style={{ ...styles.input, width: '140px' }} type="number" min="0" step="1"
-                            placeholder={(() => { const p = products.find(p => p.id === parseInt(item.productId)); return p ? Math.round(parseFloat(p.price)).toString() : ''; })()}
-                            value={item.unitPrice}
-                            onChange={e => updateItem(i, 'unitPrice', e.target.value)} />
-                          <span style={{ fontSize: '11px', color: '#b08080' }}>vacío = precio del producto</span>
-                        </div>
-                      )}
+                      {item.productId && (() => {
+                        const p = products.find(p => p.id === parseInt(item.productId));
+                        const maxStock = item.productSizeId
+                          ? (p?.sizes || []).find(s => s.id === parseInt(item.productSizeId))?.stock
+                          : p?.stock;
+                        const qty = parseInt(item.quantity) || 0;
+                        const stockExcedido = maxStock !== undefined && qty > maxStock;
+                        return (
+                          <div style={{ marginTop: '6px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                            <label style={{ ...styles.label, margin: 0, whiteSpace: 'nowrap' }}>Precio venta ($)</label>
+                            <input style={{ ...styles.input, width: '140px' }} type="number" min="0" step="1"
+                              placeholder={p ? Math.round(parseFloat(p.price)).toString() : ''}
+                              value={item.unitPrice}
+                              onChange={e => updateItem(i, 'unitPrice', e.target.value)} />
+                            <span style={{ fontSize: '11px', color: '#b08080' }}>vacío = precio del producto</span>
+                            {stockExcedido && (
+                              <span style={{ fontSize: '11px', color: '#e74c3c', fontWeight: '700' }}>
+                                ⚠ Stock disponible: {maxStock}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })()}
                       {sizes.length > 0 && (
                         <select style={{ ...styles.select, marginTop: '6px', width: '100%' }}
                           value={item.productSizeId} onChange={e => updateItem(i, 'productSizeId', e.target.value)} required>

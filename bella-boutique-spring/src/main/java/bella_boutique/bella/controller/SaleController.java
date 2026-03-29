@@ -3,6 +3,7 @@ package bella_boutique.bella.controller;
 import bella_boutique.bella.dto.CreditPaymentDTO;
 import bella_boutique.bella.dto.SaleRequestDTO;
 import bella_boutique.bella.dto.SaleResponseDTO;
+import bella_boutique.bella.dto.SettleRequestDTO;
 import bella_boutique.bella.service.SaleService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -40,6 +41,12 @@ public class SaleController {
     public ResponseEntity<SaleResponseDTO> registerPayment(@PathVariable Long saleId,
                                                             @RequestBody CreditPaymentDTO dto) {
         return ResponseEntity.ok(saleService.registerPayment(saleId, dto));
+    }
+
+    @PutMapping("/{saleId}/settle")
+    public ResponseEntity<SaleResponseDTO> settleDebt(@PathVariable Long saleId,
+                                                       @Valid @RequestBody SettleRequestDTO dto) {
+        return ResponseEntity.ok(saleService.settleDebt(saleId, dto));
     }
 }
 
