@@ -31,7 +31,7 @@ function agruparGanancias(sales) {
       const key = `${f.getFullYear()}-${String(f.getMonth() + 1).padStart(2, '0')}`;
       get(key, f.getFullYear(), f.getMonth()).ventas.push({ sale, ganancia });
 
-    } else if (sale.paymentType === 'CREDITO' && parseFloat(sale.remainingBalance || 0) === 0) {
+    } else if (sale.paymentType === 'CREDITO' && parseFloat(sale.remainingBalance || 0) <= 0) {
       // Ganancia en el mes del último pago
       const pagosPagados = (sale.creditPayments || []).filter(p => p.paid && p.paidDate);
       let fecha;
@@ -54,9 +54,18 @@ function agruparGanancias(sales) {
 export default function GananciasPage() {
   const [sales, setSales] = useState([]);
   const [selectedKey, setSelectedKey] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const loadSales = () => {
+    setLoading(true);
+    api.get('/api/sales').then(res => { setSales(res.data); setLoading(false); });
+  };
 
   useEffect(() => {
-    api.get('/api/sales').then(res => setSales(res.data));
+    loadSales();
+    const onVisible = () => { if (document.visibilityState === 'visible') loadSales(); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
   }, []);
 
   const grupos = agruparGanancias(sales);
@@ -67,7 +76,12 @@ export default function GananciasPage() {
   return (
     <div style={styles.page}>
       <div style={styles.header}>
-        <h1 style={styles.title}>Ganancias</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <h1 style={styles.title}>Ganancias</h1>
+          <button style={{ ...styles.btnRefresh, opacity: loading ? 0.6 : 1 }} onClick={loadSales} disabled={loading}>
+            {loading ? 'Actualizando...' : '↻ Actualizar'}
+          </button>
+        </div>
         <p style={styles.sub}>Ganancia real por mes · Crédito: se registra al pago final</p>
       </div>
 
@@ -277,4 +291,5 @@ const styles = {
   refTag: { color: '#c9a96e', fontWeight: '700', fontSize: '11px' },
   sizeTag: { color: '#888', fontSize: '11px' },
   acuerdoBadge: { background: '#fff8e1', border: '1px solid #ffe082', color: '#7d6000', fontSize: '11px', fontWeight: '700', padding: '3px 8px', borderRadius: '8px', cursor: 'help' },
+  btnRefresh: { background: '#3d2027', color: '#fff', border: 'none', borderRadius: '8px', padding: '6px 14px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' },
 };

@@ -275,70 +275,24 @@ export default function VentasPage() {
                 </div>
               </div>
 
-              {/* Vendedor */}
-              <div style={styles.formGroup}>
-                <label style={styles.label}>Vendedor</label>
-                <div style={styles.sellerModeToggle}>
-                  <button type="button"
-                    style={{ ...styles.sellerModeBtn, ...(sellerMode === 'list' ? styles.sellerModeBtnActive : {}) }}
-                    onClick={() => { setSellerMode('list'); setManualSellerName(''); }}>
-                    Del listado
-                  </button>
-                  <button type="button"
-                    style={{ ...styles.sellerModeBtn, ...(sellerMode === 'manual' ? styles.sellerModeBtnActive : {}) }}
-                    onClick={() => { setSellerMode('manual'); setSelectedSellerId(''); }}>
-                    Otro
-                  </button>
-                </div>
-                {sellerMode === 'list' ? (
-                  <select style={styles.select} value={selectedSellerId} onChange={e => setSelectedSellerId(e.target.value)}>
-                    <option value="">— Sin asignar —</option>
-                    {sellers.map(s => (
-                      <option key={s.id} value={s.id}>{s.firstName} {s.lastName}</option>
-                    ))}
-                  </select>
-                ) : (
-                  <input style={styles.input} placeholder="Nombre completo del vendedor"
-                    value={manualSellerName} onChange={e => setManualSellerName(e.target.value)} />
-                )}
-              </div>
-
-              {/* Datos crédito */}
-              {paymentType === 'CREDITO' && (
-                <div style={styles.creditSection}>
-                  <div style={styles.creditRow}>
-                    <div style={{ flex: 1 }}>
-                      <label style={styles.label}>Nombre del Comprador *</label>
-                      <input style={styles.input} value={buyerName} onChange={e => setBuyerName(e.target.value)} required placeholder="Nombre completo" />
-                    </div>
-                    <div style={{ width: '160px' }}>
-                      <label style={styles.label}>Inicial ($)</label>
-                      <input style={styles.input} type="number" step="1" min="0" value={initialPayment}
-                        onChange={e => setInitialPayment(e.target.value)} placeholder="0" />
-                    </div>
-                  </div>
-                  <label style={{ ...styles.label, marginTop: '12px', display: 'block' }}>Cuotas / Fechas de pago</label>
-                  {creditPayments.map((cp, i) => (
-                    <div key={i} style={styles.cpRow}>
-                      <input style={{ ...styles.input, width: '120px' }} type="number" step="1" min="0"
-                        placeholder="Monto" value={cp.amount}
-                        onChange={e => updateCreditPayment(i, 'amount', e.target.value)} required />
-                      <input style={{ ...styles.input, flex: 1 }} type="date" value={cp.dueDate}
-                        onChange={e => updateCreditPayment(i, 'dueDate', e.target.value)} />
-                      <input style={{ ...styles.input, flex: 1 }} placeholder="Nota" value={cp.notes}
-                        onChange={e => updateCreditPayment(i, 'notes', e.target.value)} />
-                      {creditPayments.length > 1 && (
-                        <button type="button" style={styles.btnRemoveItem} onClick={() => removeCreditPayment(i)}>✕</button>
-                      )}
-                    </div>
-                  ))}
-                  <button type="button" style={styles.btnAdd} onClick={addCreditPayment}>+ Agregar cuota</button>
-                </div>
-              )}
-
               {/* Productos */}
               <div style={{ marginTop: '16px' }}>
-                <label style={styles.label}>Productos *</label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '6px' }}>
+                  <label style={{ ...styles.label, marginBottom: 0 }}>Productos *</label>
+                  {(() => {
+                    const total = items.reduce((acc, it) => {
+                      const p = products.find(p => p.id === parseInt(it.productId));
+                      if (!p) return acc;
+                      const precio = it.unitPrice ? parseInt(it.unitPrice) : Math.round(parseFloat(p.price));
+                      return acc + precio * (parseInt(it.quantity) || 1);
+                    }, 0);
+                    return total > 0 ? (
+                      <span style={{ fontSize: '15px', fontWeight: '800', color: '#c9a96e' }}>
+                        Total: ${total.toLocaleString('es-CO')}
+                      </span>
+                    ) : null;
+                  })()}
+                </div>
                 {items.map((item, i) => {
                   const sizes = getSizesForItem(item);
                   return (
@@ -369,7 +323,7 @@ export default function VentasPage() {
                         return (
                           <div style={{ marginTop: '6px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                             <label style={{ ...styles.label, margin: 0, whiteSpace: 'nowrap' }}>Precio venta ($)</label>
-                            <input style={{ ...styles.input, width: '140px' }} type="number" min="0" step="1"
+                            <input style={{ ...styles.input, width: '140px' }} type="number" min="0" step="1" autoComplete="off"
                               placeholder={p ? Math.round(parseFloat(p.price)).toString() : ''}
                               value={item.unitPrice}
                               onChange={e => updateItem(i, 'unitPrice', e.target.value)} />
@@ -397,6 +351,67 @@ export default function VentasPage() {
                   );
                 })}
                 <button type="button" style={styles.btnAdd} onClick={addItem}>+ Agregar producto</button>
+              </div>
+
+              {/* Datos crédito */}
+              {paymentType === 'CREDITO' && (
+                <div style={{ ...styles.creditSection, marginTop: '16px' }}>
+                  <div style={styles.creditRow}>
+                    <div style={{ flex: 1 }}>
+                      <label style={styles.label}>Nombre del Comprador *</label>
+                      <input style={styles.input} value={buyerName} onChange={e => setBuyerName(e.target.value)} required placeholder="Nombre completo" />
+                    </div>
+                    <div style={{ width: '160px' }}>
+                      <label style={styles.label}>Inicial ($)</label>
+                      <input style={styles.input} type="number" step="1" min="0" autoComplete="off" value={initialPayment}
+                        onChange={e => setInitialPayment(e.target.value)} placeholder="0" />
+                    </div>
+                  </div>
+                  <label style={{ ...styles.label, marginTop: '12px', display: 'block' }}>Cuotas / Fechas de pago</label>
+                  {creditPayments.map((cp, i) => (
+                    <div key={i} style={styles.cpRow}>
+                      <input style={{ ...styles.input, width: '120px' }} type="number" step="1" min="0" autoComplete="off"
+                        placeholder="Monto" value={cp.amount}
+                        onChange={e => updateCreditPayment(i, 'amount', e.target.value)} required />
+                      <input style={{ ...styles.input, flex: 1 }} type="date" value={cp.dueDate}
+                        onChange={e => updateCreditPayment(i, 'dueDate', e.target.value)} />
+                      <input style={{ ...styles.input, flex: 1 }} placeholder="Nota" value={cp.notes}
+                        onChange={e => updateCreditPayment(i, 'notes', e.target.value)} />
+                      {creditPayments.length > 1 && (
+                        <button type="button" style={styles.btnRemoveItem} onClick={() => removeCreditPayment(i)}>✕</button>
+                      )}
+                    </div>
+                  ))}
+                  <button type="button" style={styles.btnAdd} onClick={addCreditPayment}>+ Agregar cuota</button>
+                </div>
+              )}
+
+              {/* Vendedor */}
+              <div style={{ ...styles.formGroup, marginTop: '16px' }}>
+                <label style={styles.label}>Vendedor</label>
+                <div style={styles.sellerModeToggle}>
+                  <button type="button"
+                    style={{ ...styles.sellerModeBtn, ...(sellerMode === 'list' ? styles.sellerModeBtnActive : {}) }}
+                    onClick={() => { setSellerMode('list'); setManualSellerName(''); }}>
+                    Del listado
+                  </button>
+                  <button type="button"
+                    style={{ ...styles.sellerModeBtn, ...(sellerMode === 'manual' ? styles.sellerModeBtnActive : {}) }}
+                    onClick={() => { setSellerMode('manual'); setSelectedSellerId(''); }}>
+                    Otro
+                  </button>
+                </div>
+                {sellerMode === 'list' ? (
+                  <select style={styles.select} value={selectedSellerId} onChange={e => setSelectedSellerId(e.target.value)}>
+                    <option value="">— Sin asignar —</option>
+                    {sellers.map(s => (
+                      <option key={s.id} value={s.id}>{s.firstName} {s.lastName}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input style={styles.input} placeholder="Nombre completo del vendedor"
+                    value={manualSellerName} onChange={e => setManualSellerName(e.target.value)} />
+                )}
               </div>
 
               {error && <p style={styles.error}>{error}</p>}

@@ -197,7 +197,7 @@ export default function DeudoresPage() {
             </p>
             <div style={{ marginBottom: '14px' }}>
               <label style={styles.label}>Monto a cobrar ($)</label>
-              <input style={styles.input} type="number" step="1" min="1" autoFocus
+              <input style={styles.input} type="number" step="1" min="1" autoFocus autoComplete="off"
                 value={settleModal.amount}
                 onChange={e => { setSettleModal({ ...settleModal, amount: e.target.value }); setSettleError(''); }} />
             </div>
@@ -256,6 +256,7 @@ export default function DeudoresPage() {
                 step="1"
                 min="1"
                 autoFocus
+                autoComplete="off"
                 value={pagoModal.amount}
                 onChange={e => { setPagoModal({ ...pagoModal, amount: e.target.value }); setPagoError(''); }}
               />

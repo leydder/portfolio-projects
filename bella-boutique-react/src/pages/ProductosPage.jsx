@@ -162,11 +162,11 @@ export default function ProductosPage() {
               </div>
               <div style={styles.formGroup}>
                 <label style={styles.label}>Precio de compra</label>
-                <input style={styles.input} type="number" step="1" min="0" value={form.purchasePrice} onChange={e => setForm({ ...form, purchasePrice: e.target.value })} placeholder="Costo del proveedor" />
+                <input style={styles.input} type="number" step="1" min="0" autoComplete="off" value={form.purchasePrice} onChange={e => setForm({ ...form, purchasePrice: e.target.value })} placeholder="Costo del proveedor" />
               </div>
               <div style={styles.formGroup}>
                 <label style={styles.label}>Precio de venta *</label>
-                <input style={styles.input} type="number" step="1" min="1" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} required />
+                <input style={styles.input} type="number" step="1" min="1" autoComplete="off" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} required />
               </div>
 
               {/* Toggle tallas */}

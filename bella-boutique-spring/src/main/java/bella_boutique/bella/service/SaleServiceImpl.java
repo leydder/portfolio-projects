@@ -148,12 +148,18 @@ public class SaleServiceImpl implements SaleService {
         BigDecimal saldoPendiente = sale.getRemainingBalance();
         boolean esDescuento = dto.getAmount().compareTo(saldoPendiente) < 0;
 
-        String nota = (dto.getNotes() != null && !dto.getNotes().isBlank())
-                ? dto.getNotes()
-                : (esDescuento
-                    ? "Cancelación de deuda por decisión de gerencia. Acordado: $" + dto.getAmount().toPlainString()
-                      + " de $" + saldoPendiente.toPlainString() + " pendiente."
-                    : "Pago total de deuda.");
+        String baseDescuento = "Cancelación por decisión de gerencia. Acordado: $"
+                + dto.getAmount().toPlainString() + " de $" + saldoPendiente.toPlainString() + " pendiente.";
+        String nota;
+        if (esDescuento) {
+            nota = (dto.getNotes() != null && !dto.getNotes().isBlank())
+                    ? baseDescuento + " Nota: " + dto.getNotes()
+                    : baseDescuento;
+        } else {
+            nota = (dto.getNotes() != null && !dto.getNotes().isBlank())
+                    ? dto.getNotes()
+                    : "Pago total de deuda.";
+        }
 
         List<CreditPayment> pendientes = creditPaymentRepository.findBySaleId(saleId).stream()
                 .filter(cp -> !cp.isPaid())
