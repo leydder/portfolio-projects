@@ -35,3 +35,6 @@ build/
 ### Base de datos y archivos subidos ###
 *.db
 uploads/
+
+### Frontend build (generado) ###
+src/main/resources/static/
