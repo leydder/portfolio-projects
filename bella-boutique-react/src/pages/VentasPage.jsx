@@ -1,9 +1,12 @@
 import { useEffect, useState, useMemo } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 
 const EMPTY_CREDIT_PAYMENT = { amount: '', dueDate: '', notes: '' };
 
 export default function VentasPage() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [sales, setSales] = useState([]);
   const [products, setProducts] = useState([]);
   const [sellers, setSellers] = useState([]);
@@ -20,19 +23,35 @@ export default function VentasPage() {
   const [selected, setSelected] = useState(null);
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('todos'); // 'todos' | 'contado' | 'credito'
+  const [showDeleted, setShowDeleted] = useState(false);
+  const [deletedSales, setDeletedSales] = useState([]);
 
   const loadData = async () => {
-    const [salesRes, productsRes, sellersRes] = await Promise.all([
+    const [salesRes, productsRes, sellersRes, deletedRes] = await Promise.all([
       api.get('/api/sales'),
       api.get('/api/products'),
       api.get('/api/sellers'),
+      api.get('/api/sales/deleted'),
     ]);
     setSales(salesRes.data);
     setProducts(productsRes.data);
     setSellers(sellersRes.data);
+    setDeletedSales(deletedRes.data);
   };
 
   useEffect(() => { loadData(); }, []);
+
+  // Pre-llenar formulario si viene de Productos con un producto seleccionado
+  useEffect(() => {
+    if (location.state?.product && products.length > 0) {
+      const p = location.state.product;
+      const exists = products.find(pr => pr.id === p.id);
+      if (exists) {
+        setItems([{ productId: String(p.id), productSizeId: '', quantity: 1, unitPrice: '' }]);
+        setShowForm(true);
+      }
+    }
+  }, [location.state, products]);
 
   // ── Items del formulario ──────────────────────────────────────────────────
   const addItem = () => setItems([...items, { productId: '', productSizeId: '', quantity: 1, unitPrice: '' }]);
@@ -128,7 +147,11 @@ export default function VentasPage() {
       };
       await api.post('/api/sales', payload);
       closeForm();
-      loadData();
+      if (location.state?.product) {
+        navigate('/productos');
+      } else {
+        loadData();
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Error al registrar venta');
     }
@@ -145,6 +168,17 @@ export default function VentasPage() {
     setSelectedSellerId('');
     setManualSellerName('');
     setError('');
+  };
+
+  const handleDeleteSale = async (id) => {
+    if (!confirm('¿Eliminar esta venta? El stock de los productos será restaurado.')) return;
+    try {
+      await api.delete(`/api/sales/${id}`);
+      if (selected?.id === id) setSelected(null);
+      loadData();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Error al eliminar la venta');
+    }
   };
 
   const handleMarkPaid = async (saleId, paymentId) => {
@@ -186,7 +220,11 @@ export default function VentasPage() {
       if (!i.purchasePrice) return a;
       return a + (parseFloat(i.unitPrice) - parseFloat(i.purchasePrice)) * i.quantity;
     }, 0);
-  }, 0);
+  }, 0)
+  // Ventas a crédito eliminadas: el inicial cobrado es ganancia (stock fue devuelto)
+  + deletedSales
+      .filter(s => s.paymentType === 'CREDITO')
+      .reduce((acc, s) => acc + parseFloat(s.initialPayment || 0), 0);
 
   return (
     <div style={styles.page}>
@@ -196,7 +234,18 @@ export default function VentasPage() {
           <h1 style={styles.title}>Ventas</h1>
           <p style={styles.count}>{sales.length} ventas registradas</p>
         </div>
-        <button style={styles.btnPrimary} onClick={() => setShowForm(true)}>+ Nueva Venta</button>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <button
+            style={{ ...styles.btnSecondary, fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px', position: 'relative' }}
+            onClick={() => setShowDeleted(v => !v)}
+          >
+            🗑 Papelera
+            {deletedSales.length > 0 && (
+              <span style={{ background: '#e74c3c', color: '#fff', borderRadius: '10px', fontSize: '11px', fontWeight: '700', padding: '1px 6px' }}>{deletedSales.length}</span>
+            )}
+          </button>
+          <button style={styles.btnPrimary} onClick={() => setShowForm(true)}>+ Nueva Venta</button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -243,12 +292,12 @@ export default function VentasPage() {
       {/* Columnas Contado / Crédito */}
       {activeTab === 'todos' ? (
         <div style={styles.columns}>
-          <SalesColumn title="Contado" color="#27ae60" sales={contadoList} onSelect={setSelected} />
-          <SalesColumn title="Crédito" color="#e67e22" sales={creditoList} onSelect={setSelected} />
+          <SalesColumn title="Contado" color="#27ae60" sales={contadoList} onSelect={setSelected} onDelete={handleDeleteSale} />
+          <SalesColumn title="Crédito" color="#e67e22" sales={creditoList} onSelect={setSelected} onDelete={handleDeleteSale} />
         </div>
       ) : (
         <div style={styles.singleColumn}>
-          {filtered.map(sale => <SaleCard key={sale.id} sale={sale} onSelect={setSelected} />)}
+          {filtered.map(sale => <SaleCard key={sale.id} sale={sale} onSelect={setSelected} onDelete={handleDeleteSale} />)}
           {filtered.length === 0 && <p style={styles.empty}>Sin ventas que coincidan</p>}
         </div>
       )}
@@ -424,6 +473,54 @@ export default function VentasPage() {
         </div>
       )}
 
+      {/* Panel: Papelera de ventas eliminadas */}
+      {showDeleted && (
+        <div style={styles.overlay} onClick={() => setShowDeleted(false)}>
+          <div style={{ ...styles.modal, width: '700px' }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h2 style={styles.modalTitle}>🗑 Papelera de ventas</h2>
+              <button style={styles.btnSecondary} onClick={() => setShowDeleted(false)}>Cerrar</button>
+            </div>
+            {deletedSales.length === 0 ? (
+              <p style={{ color: '#b08080', textAlign: 'center', padding: '32px' }}>No hay ventas eliminadas</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '65vh', overflowY: 'auto' }}>
+                {deletedSales.map(sale => (
+                  <div key={sale.id} style={{ background: '#fdf0ed', borderRadius: '10px', padding: '14px 16px', opacity: 0.8 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontWeight: '700', color: '#3d2027', fontSize: '14px' }}>Venta #{sale.id}</span>
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <span style={{ fontSize: '11px', color: '#b08080' }}>
+                          Eliminada: {new Date(sale.deletedAt).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}
+                        </span>
+                        <span style={{ ...colStyles.typeBadge, background: sale.paymentType === 'CREDITO' ? '#fff3e0' : '#e8f5e9', color: sale.paymentType === 'CREDITO' ? '#e67e22' : '#27ae60' }}>
+                          {sale.paymentType === 'CREDITO' ? 'Crédito' : 'Contado'}
+                        </span>
+                      </div>
+                    </div>
+                    <p style={{ fontSize: '12px', color: '#b08080', margin: '4px 0' }}>
+                      {new Date(sale.saleDate).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      {sale.sellerName && <> · Vendedor: <strong>{sale.sellerName}</strong></>}
+                      {sale.buyerName && <> · Comprador: <strong>{sale.buyerName}</strong></>}
+                    </p>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', margin: '6px 0' }}>
+                      {sale.items.map(item => (
+                        <span key={item.id} style={{ background: '#e8e0d8', color: '#5a3540', fontSize: '11px', fontWeight: '600', padding: '2px 8px', borderRadius: '10px' }}>
+                          {item.productName} {item.sizeName ? `(${item.sizeName})` : ''} ×{item.quantity}
+                        </span>
+                      ))}
+                    </div>
+                    <span style={{ fontWeight: '800', color: '#c9a96e', fontSize: '16px' }}>
+                      ${Math.round(parseFloat(sale.totalAmount)).toLocaleString('es-CO')}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Modal: Detalle venta */}
       {selected && (
         <div style={styles.overlay} onClick={() => setSelected(null)}>
@@ -509,7 +606,7 @@ export default function VentasPage() {
 }
 
 // ── Componentes auxiliares ────────────────────────────────────────────────────
-function SalesColumn({ title, color, sales, onSelect }) {
+function SalesColumn({ title, color, sales, onSelect, onDelete }) {
   return (
     <div style={colStyles.col}>
       <div style={{ ...colStyles.colHeader, borderColor: color }}>
@@ -518,42 +615,52 @@ function SalesColumn({ title, color, sales, onSelect }) {
       </div>
       <div style={colStyles.colBody}>
         {sales.length === 0 && <p style={colStyles.empty}>Sin ventas</p>}
-        {sales.map(sale => <SaleCard key={sale.id} sale={sale} onSelect={onSelect} compact />)}
+        {sales.map(sale => <SaleCard key={sale.id} sale={sale} onSelect={onSelect} onDelete={onDelete} compact />)}
       </div>
     </div>
   );
 }
 
-function SaleCard({ sale, onSelect, compact }) {
+function SaleCard({ sale, onSelect, onDelete, compact }) {
   const fecha = new Date(sale.saleDate).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
   const total = Math.round(parseFloat(sale.totalAmount));
   const saldo = Math.round(parseFloat(sale.remainingBalance || 0));
   const inicial = Math.round(parseFloat(sale.initialPayment || 0));
   return (
-    <div style={{ ...colStyles.card, ...(compact ? colStyles.cardCompact : {}) }} onClick={() => onSelect(sale)}>
-      <div style={colStyles.cardTop}>
-        <span style={colStyles.cardId}>Venta #{sale.id}</span>
-        <span style={{ ...colStyles.typeBadge, background: sale.paymentType === 'CREDITO' ? '#fff3e0' : '#e8f5e9', color: sale.paymentType === 'CREDITO' ? '#e67e22' : '#27ae60' }}>
-          {sale.paymentType === 'CREDITO' ? 'Crédito' : 'Contado'}
-        </span>
-      </div>
-      <p style={colStyles.cardDate}>{fecha}</p>
-      {sale.sellerName && <p style={colStyles.cardSeller}>Vendedor: {sale.sellerName}</p>}
-      {sale.buyerName && <p style={colStyles.cardBuyer}>Comprador: {sale.buyerName}</p>}
-      <div style={colStyles.cardBottom}>
-        <span style={colStyles.cardTotal}>${total.toLocaleString('es-CO')}</span>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '3px' }}>
-          {sale.paymentType === 'CREDITO' && inicial > 0 && (
-            <span style={colStyles.inicialBadge}>Inicial: ${inicial.toLocaleString('es-CO')}</span>
-          )}
-          {sale.paymentType === 'CREDITO' && saldo > 0 && (
-            <span style={colStyles.pendingBadge}>Saldo: ${saldo.toLocaleString('es-CO')}</span>
-          )}
-          {sale.paymentType === 'CREDITO' && saldo === 0 && (
-            <span style={colStyles.paidBadge}>✓ Saldado</span>
-          )}
+    <div style={{ ...colStyles.card, ...(compact ? colStyles.cardCompact : {}) }}>
+      {/* Cuerpo clickeable para ver detalle */}
+      <div onClick={() => onSelect(sale)} style={{ cursor: 'pointer', padding: '12px 14px' }}>
+        <div style={colStyles.cardTop}>
+          <span style={colStyles.cardId}>Venta #{sale.id}</span>
+          <span style={{ ...colStyles.typeBadge, background: sale.paymentType === 'CREDITO' ? '#fff3e0' : '#e8f5e9', color: sale.paymentType === 'CREDITO' ? '#e67e22' : '#27ae60' }}>
+            {sale.paymentType === 'CREDITO' ? 'Crédito' : 'Contado'}
+          </span>
+        </div>
+        <p style={colStyles.cardDate}>{fecha}</p>
+        {sale.sellerName && <p style={colStyles.cardSeller}>Vendedor: {sale.sellerName}</p>}
+        {sale.buyerName && <p style={colStyles.cardBuyer}>Comprador: {sale.buyerName}</p>}
+        <div style={colStyles.cardBottom}>
+          <span style={colStyles.cardTotal}>${total.toLocaleString('es-CO')}</span>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '3px' }}>
+            {sale.paymentType === 'CREDITO' && inicial > 0 && (
+              <span style={colStyles.inicialBadge}>Inicial: ${inicial.toLocaleString('es-CO')}</span>
+            )}
+            {sale.paymentType === 'CREDITO' && saldo > 0 && (
+              <span style={colStyles.pendingBadge}>Saldo: ${saldo.toLocaleString('es-CO')}</span>
+            )}
+            {sale.paymentType === 'CREDITO' && saldo === 0 && (
+              <span style={colStyles.paidBadge}>✓ Saldado</span>
+            )}
+          </div>
         </div>
       </div>
+      {/* Acción destructiva separada visualmente */}
+      <button
+        style={colStyles.btnDeleteCard}
+        onClick={e => { e.stopPropagation(); onDelete(sale.id); }}
+      >
+        🗑 Eliminar venta
+      </button>
     </div>
   );
 }
@@ -629,8 +736,10 @@ const colStyles = {
   colCount: { background: '#fdf0ed', color: '#7d4255', borderRadius: '12px', padding: '2px 10px', fontSize: '12px', fontWeight: '700' },
   colBody: { padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '65vh', overflowY: 'auto' },
   empty: { color: '#b08080', textAlign: 'center', padding: '24px', fontSize: '13px' },
-  card: { background: '#fdf0ed', borderRadius: '10px', padding: '14px 16px', cursor: 'pointer', border: '1.5px solid transparent', transition: 'border 0.15s' },
-  cardCompact: { padding: '12px 14px' },
+  card: { background: '#fdf0ed', borderRadius: '10px', overflow: 'hidden', border: '1.5px solid transparent' },
+  cardCompact: {},
+  cardInner: { padding: '12px 14px' },
+  btnDeleteCard: { display: 'block', width: '100%', padding: '8px', background: '#fde8e8', color: '#c0392b', border: 'none', borderTop: '1px solid #f5c6c6', cursor: 'pointer', fontWeight: '600', fontSize: '12px', textAlign: 'center' },
   cardTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' },
   cardId: { fontWeight: '700', color: '#3d2027', fontSize: '14px' },
   typeBadge: { fontSize: '11px', fontWeight: '700', padding: '2px 8px', borderRadius: '10px' },

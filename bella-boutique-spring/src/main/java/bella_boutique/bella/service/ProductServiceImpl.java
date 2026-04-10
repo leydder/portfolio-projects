@@ -9,6 +9,7 @@ import bella_boutique.bella.model.Product;
 import bella_boutique.bella.model.ProductSize;
 import bella_boutique.bella.repository.ProductRepository;
 import bella_boutique.bella.repository.ProductSizeRepository;
+import bella_boutique.bella.repository.SaleItemRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,11 +24,14 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final ProductSizeRepository productSizeRepository;
+    private final SaleItemRepository saleItemRepository;
 
     public ProductServiceImpl(ProductRepository productRepository,
-                              ProductSizeRepository productSizeRepository) {
+                              ProductSizeRepository productSizeRepository,
+                              SaleItemRepository saleItemRepository) {
         this.productRepository = productRepository;
         this.productSizeRepository = productSizeRepository;
+        this.saleItemRepository = saleItemRepository;
     }
 
     @Override
@@ -93,9 +97,8 @@ public class ProductServiceImpl implements ProductService {
     public void delete(Long id) {
         validateId(id);
         Product product = findProductById(id);
-        if (productRepository.existsProductInSales(id)) {
-            throw new InvalidRequestException("No se puede eliminar un producto que tiene ventas asociadas");
-        }
+        saleItemRepository.deleteByProductId(id);
+        productSizeRepository.deleteAll(productSizeRepository.findByProductId(id));
         productRepository.delete(product);
     }
 

@@ -12,4 +12,6 @@ public interface SaleService {
     SaleResponseDTO findById(Long id);
     SaleResponseDTO registerPayment(Long saleId, CreditPaymentDTO dto);
     SaleResponseDTO settleDebt(Long saleId, SettleRequestDTO dto);
+    void delete(Long id);
+    List<SaleResponseDTO> findAllDeleted();
 }

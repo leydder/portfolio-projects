@@ -16,7 +16,7 @@ function calcGananciaSale(sale) {
   }, 0);
 }
 
-function agruparGanancias(sales) {
+function agruparGanancias(sales, deletedCreditSales = []) {
   const mapa = {};
   const get = (key, year, month) => {
     if (!mapa[key]) mapa[key] = { key, year, month, ventas: [] };
@@ -39,7 +39,6 @@ function agruparGanancias(sales) {
         const lastDate = pagosPagados.reduce((max, p) => p.paidDate > max ? p.paidDate : max, pagosPagados[0].paidDate);
         fecha = parseFechaLocal(lastDate);
       } else {
-        // Solo cuota inicial cubrió todo
         fecha = parseFechaLocal(sale.saleDate);
       }
       const key = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}`;
@@ -48,17 +47,34 @@ function agruparGanancias(sales) {
     // Crédito pendiente: no se incluye
   }
 
+  // Créditos eliminados: el inicial cobrado es ganancia (stock fue restituido)
+  for (const sale of deletedCreditSales) {
+    const inicial = parseFloat(sale.initialPayment || 0);
+    if (inicial <= 0 || !sale.deletedAt) continue;
+    const f = parseFechaLocal(sale.deletedAt);
+    const key = `${f.getFullYear()}-${String(f.getMonth() + 1).padStart(2, '0')}`;
+    get(key, f.getFullYear(), f.getMonth()).ventas.push({ sale, ganancia: inicial, isCancelled: true });
+  }
+
   return Object.values(mapa).sort((a, b) => b.key.localeCompare(a.key));
 }
 
 export default function GananciasPage() {
   const [sales, setSales] = useState([]);
+  const [deletedCreditSales, setDeletedCreditSales] = useState([]);
   const [selectedKey, setSelectedKey] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const loadSales = () => {
     setLoading(true);
-    api.get('/api/sales').then(res => { setSales(res.data); setLoading(false); });
+    Promise.all([
+      api.get('/api/sales'),
+      api.get('/api/sales/deleted'),
+    ]).then(([res, deletedRes]) => {
+      setSales(res.data);
+      setDeletedCreditSales(deletedRes.data.filter(s => s.paymentType === 'CREDITO'));
+      setLoading(false);
+    });
   };
 
   useEffect(() => {
@@ -68,7 +84,7 @@ export default function GananciasPage() {
     return () => document.removeEventListener('visibilitychange', onVisible);
   }, []);
 
-  const grupos = agruparGanancias(sales);
+  const grupos = agruparGanancias(sales, deletedCreditSales);
   const selectedGrupo = grupos.find(g => g.key === selectedKey);
 
   const pendientes = sales.filter(s => s.paymentType === 'CREDITO' && parseFloat(s.remainingBalance || 0) > 0);
@@ -187,7 +203,34 @@ export default function GananciasPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {selectedGrupo.ventas.flatMap(({ sale }) => {
+                    {selectedGrupo.ventas.flatMap(({ sale, ganancia, isCancelled }) => {
+                      // Venta a crédito cancelada: fila especial (inicial cobrado)
+                      if (isCancelled) {
+                        return [(
+                          <tr key={`cancelled-${sale.id}`} style={{ ...styles.tr, background: '#fff8e1' }}>
+                            <td style={styles.td}><span style={styles.saleIdBadge}>#{sale.id}</span></td>
+                            <td style={styles.td}>
+                              <span style={{ ...styles.typeBadge, background: '#fde8e8', color: '#e74c3c' }}>
+                                Crédito cancelado
+                              </span>
+                            </td>
+                            <td style={styles.td}>
+                              <span style={styles.acuerdoBadge}>Venta eliminada</span>
+                            </td>
+                            <td style={styles.td}>
+                              <span style={styles.sellerBadge}>{sale.sellerName || '—'}</span>
+                            </td>
+                            <td style={{ ...styles.td, color: '#888', fontStyle: 'italic' }} colSpan={4}>
+                              Inicial cobrado — {sale.buyerName || 'sin comprador'}
+                              {sale.items.length > 0 && `: ${sale.items.map(i => i.productName).join(', ')}`}
+                            </td>
+                            <td style={{ ...styles.td, fontWeight: 700, color: '#27ae60' }}>
+                              ${Math.round(ganancia).toLocaleString('es-CO')}
+                            </td>
+                          </tr>
+                        )];
+                      }
+
                       // Detectar si fue liquidada con descuento (acuerdo de gerencia)
                       const notaAcuerdo = (sale.creditPayments || [])
                         .filter(p => p.paid && p.notes && p.notes.includes('gerencia'))

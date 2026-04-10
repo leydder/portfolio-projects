@@ -73,7 +73,12 @@ public class SaleServiceImpl implements SaleService {
 
     @Override
     public List<SaleResponseDTO> findAll() {
-        return saleRepository.findAll().stream().map(this::toResponseDTO).toList();
+        return saleRepository.findByDeletedFalseOrderBySaleDateDesc().stream().map(this::toResponseDTO).toList();
+    }
+
+    @Override
+    public List<SaleResponseDTO> findAllDeleted() {
+        return saleRepository.findByDeletedTrueOrderByDeletedAtDesc().stream().map(this::toResponseDTO).toList();
     }
 
     @Override
@@ -190,6 +195,36 @@ public class SaleServiceImpl implements SaleService {
         return toResponseDTO(sale);
     }
 
+    @Override
+    @Transactional
+    public void delete(Long id) {
+        Sale sale = saleRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format(SALE_NOT_FOUND, id)));
+
+        for (SaleItem item : sale.getItems()) {
+            try {
+                Product product = item.getProduct();
+                if (product == null) continue;
+                if (item.getProductSize() != null) {
+                    ProductSize size = item.getProductSize();
+                    size.setStock(size.getStock() + item.getQuantity());
+                    productSizeRepository.save(size);
+                    productService.updateTotalStock(product);
+                    productRepository.save(product);
+                } else {
+                    product.setStock(product.getStock() + item.getQuantity());
+                    productRepository.save(product);
+                }
+            } catch (Exception ignored) {
+                // El producto ya no existe; omitir restauración de stock
+            }
+        }
+
+        sale.setDeleted(true);
+        sale.setDeletedAt(java.time.LocalDateTime.now());
+        saleRepository.save(sale);
+    }
+
     private void validateCreditFields(PaymentType paymentType, SaleRequestDTO dto) {
         if (paymentType != PaymentType.CREDITO) return;
         if (dto.getBuyerName() == null || dto.getBuyerName().isBlank()) {
@@ -292,6 +327,7 @@ public class SaleServiceImpl implements SaleService {
         dto.setInitialPayment(sale.getInitialPayment());
         dto.setRemainingBalance(sale.getRemainingBalance());
         dto.setSellerName(sale.getSellerName());
+        dto.setDeletedAt(sale.getDeletedAt());
 
         dto.setItems(sale.getItems().stream().map(item -> {
             SaleResponseDTO.SaleItemResponseDTO i = new SaleResponseDTO.SaleItemResponseDTO();

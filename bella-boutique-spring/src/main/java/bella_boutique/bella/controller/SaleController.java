@@ -48,5 +48,16 @@ public class SaleController {
                                                        @Valid @RequestBody SettleRequestDTO dto) {
         return ResponseEntity.ok(saleService.settleDebt(saleId, dto));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        saleService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/deleted")
+    public ResponseEntity<List<SaleResponseDTO>> findAllDeleted() {
+        return ResponseEntity.ok(saleService.findAllDeleted());
+    }
 }
 

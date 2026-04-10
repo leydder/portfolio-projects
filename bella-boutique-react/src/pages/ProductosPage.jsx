@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 
@@ -11,6 +12,7 @@ const EMPTY_FORM = {
 
 export default function ProductosPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'table'
   const [showForm, setShowForm] = useState(false);
@@ -48,7 +50,7 @@ export default function ProductosPage() {
   const removeSize = (i) => setForm({ ...form, sizes: form.sizes.filter((_, idx) => idx !== i) });
   const updateSize = (i, field, value) => {
     const updated = [...form.sizes];
-    updated[i] = { ...updated[i], [field]: value };
+    updated[i] = { ...updated[i], [field]: field === 'sizeName' ? value.toUpperCase() : value };
     setForm({ ...form, sizes: updated });
   };
 
@@ -189,7 +191,7 @@ export default function ProductosPage() {
                   <label style={styles.label}>Tallas y Stock</label>
                   {form.sizes.map((s, i) => (
                     <div key={i} style={styles.sizeRow}>
-                      <input style={{ ...styles.input, flex: 1 }} placeholder="Ej: S, M, L, XL, 38..." value={s.sizeName}
+                      <input style={{ ...styles.input, flex: 1, textTransform: 'uppercase' }} placeholder="Ej: S, M, L, XL, 38..." value={s.sizeName}
                         onChange={e => updateSize(i, 'sizeName', e.target.value)} required />
                       <input style={{ ...styles.input, width: '80px' }} type="number" min="0" placeholder="Stock" value={s.stock}
                         onChange={e => updateSize(i, 'stock', e.target.value)} required />
@@ -243,10 +245,12 @@ export default function ProductosPage() {
         <div style={styles.grid}>
           {products.map(p => (
             <div key={p.id} style={styles.card}>
+              {/* Imagen */}
               <div style={styles.imageContainer}>
                 {p.imageUrl ? <img src={p.imageUrl} alt={p.name} style={styles.image} /> : <div style={styles.imagePlaceholder}>👗</div>}
                 {p.stock === 0 && <span style={styles.soldOut}>Agotado</span>}
               </div>
+              {/* Info del producto */}
               <div style={styles.cardBody}>
                 {p.referenceNumber && <p style={styles.refNumber}>#{p.referenceNumber}</p>}
                 <p style={styles.cardName}>{p.name}</p>
@@ -263,9 +267,21 @@ export default function ProductosPage() {
                 )}
                 <div style={styles.cardFooter}>
                   <span style={styles.price}>${parseFloat(p.price).toLocaleString('es-CO')}</span>
-                  <span style={styles.stock}>Stock: {p.stock}</span>
+                  <span style={p.stock === 0 ? styles.stockOut : styles.stock}>
+                    {p.stock === 0 ? 'Sin stock' : `${p.stock} und`}
+                  </span>
                 </div>
-                <div style={styles.cardActions}>
+              </div>
+              {/* Botones de acción */}
+              <div style={styles.cardActions}>
+                <button
+                  style={{ ...styles.btnSellFull, ...(p.stock === 0 ? styles.btnSellDisabled : {}) }}
+                  onClick={() => p.stock > 0 && navigate('/ventas', { state: { product: p } })}
+                  disabled={p.stock === 0}
+                >
+                  {p.stock === 0 ? 'Sin stock' : 'Vender'}
+                </button>
+                <div style={styles.cardSecondaryActions}>
                   <button style={styles.btnEdit} onClick={() => handleEdit(p)}>Editar</button>
                   {user?.role === 'ADMIN' && (
                     <button style={styles.btnDelete} onClick={() => handleDelete(p.id)}>Eliminar</button>
@@ -324,10 +340,18 @@ export default function ProductosPage() {
                     ) : <span style={{ color: '#aaa', fontSize: '12px' }}>—</span>}
                   </td>
                   <td style={styles.td}>
-                    <div style={{ display: 'flex', gap: '6px' }}>
-                      <button style={styles.btnEdit} onClick={() => handleEdit(p)}>Editar</button>
+                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                      <button
+                        style={{ ...styles.btnSellTable, ...(p.stock === 0 ? styles.btnSellDisabled : {}) }}
+                        onClick={() => p.stock > 0 && navigate('/ventas', { state: { product: p } })}
+                        disabled={p.stock === 0}
+                        title={p.stock === 0 ? 'Sin stock' : 'Registrar venta'}
+                      >
+                        🛒 Vender
+                      </button>
+                      <button style={styles.btnIconTable} title="Editar" onClick={() => handleEdit(p)}>✎</button>
                       {user?.role === 'ADMIN' && (
-                        <button style={styles.btnDelete} onClick={() => handleDelete(p.id)}>Eliminar</button>
+                        <button style={{ ...styles.btnIconTable, ...styles.btnIconTableDanger }} title="Eliminar" onClick={() => handleDelete(p.id)}>🗑</button>
                       )}
                     </div>
                   </td>
@@ -372,22 +396,26 @@ const styles = {
   fileLabel: { display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '90px', cursor: 'pointer', color: '#888', fontSize: '14px' },
   previewImg: { width: '100%', maxHeight: '140px', objectFit: 'cover', display: 'block' },
   // Grid view
-  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '24px' },
-  card: { background: '#fff', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' },
-  imageContainer: { position: 'relative', height: '220px', background: '#f0ede8', overflow: 'hidden' },
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '20px' },
+  card: { background: '#fff', borderRadius: '14px', overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,0.07)', display: 'flex', flexDirection: 'column' },
+  imageContainer: { position: 'relative', height: '190px', background: '#f0ede8', overflow: 'hidden' },
   image: { width: '100%', height: '100%', objectFit: 'cover' },
-  imagePlaceholder: { width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '60px' },
-  soldOut: { position: 'absolute', top: '12px', right: '12px', background: '#3d2027', color: '#fff', fontSize: '11px', fontWeight: '700', padding: '4px 10px', borderRadius: '12px' },
-  cardBody: { padding: '16px' },
-  cardName: { fontWeight: '700', fontSize: '15px', color: '#3d2027', margin: '0 0 6px' },
+  imagePlaceholder: { width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '56px' },
+  soldOut: { position: 'absolute', top: '10px', left: '10px', background: 'rgba(61,32,39,0.82)', color: '#fff', fontSize: '10px', fontWeight: '700', padding: '3px 9px', borderRadius: '20px', letterSpacing: '0.5px' },
+  cardBody: { padding: '12px 16px 8px', flex: 1 },
+  cardName: { fontWeight: '700', fontSize: '14px', color: '#3d2027', margin: '0 0 6px', lineHeight: '1.3' },
   cardSpec: { fontSize: '12px', color: '#888', margin: '2px 0' },
-  cardFooter: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '10px 0 10px' },
+  cardFooter: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' },
   price: { fontWeight: '800', fontSize: '17px', color: '#c9a96e' },
-  stock: { fontSize: '12px', color: '#888', background: '#f5f5f5', padding: '3px 8px', borderRadius: '12px' },
-  refNumber: { fontSize: '11px', color: '#c9a96e', fontWeight: '700', letterSpacing: '1px', margin: '0 0 4px' },
-  cardActions: { display: 'flex', gap: '8px' },
-  btnEdit: { flex: 1, padding: '8px', background: '#f0ede8', color: '#3d2027', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '12px' },
-  btnDelete: { flex: 1, padding: '8px', background: '#fde8e8', color: '#e74c3c', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '12px' },
+  stock: { fontSize: '11px', color: '#2e7d32', background: '#e8f5e9', padding: '3px 8px', borderRadius: '10px', fontWeight: '600' },
+  stockOut: { fontSize: '11px', color: '#e74c3c', background: '#fde8e8', padding: '3px 8px', borderRadius: '10px', fontWeight: '600' },
+  refNumber: { fontSize: '11px', color: '#c9a96e', fontWeight: '700', letterSpacing: '1px', margin: '0 0 3px' },
+  cardActions: { padding: '0 14px 14px', display: 'flex', flexDirection: 'column', gap: '8px' },
+  btnSellFull: { width: '100%', padding: '11px', background: '#1e8449', color: '#fff', border: 'none', borderRadius: '9px', cursor: 'pointer', fontWeight: '700', fontSize: '13px', letterSpacing: '0.3px' },
+  btnSellDisabled: { background: '#ebebeb', color: '#bbb', cursor: 'not-allowed' },
+  cardSecondaryActions: { display: 'flex', gap: '8px' },
+  btnEdit: { flex: 1, padding: '8px', background: '#f0ede8', color: '#3d2027', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '12px' },
+  btnDelete: { flex: 1, padding: '8px', background: '#fde8e8', color: '#e74c3c', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '12px' },
   sizesList: { display: 'flex', flexWrap: 'wrap', gap: '4px', margin: '6px 0' },
   sizeChip: { background: '#f0ede8', color: '#3d2027', fontSize: '11px', fontWeight: '600', padding: '2px 8px', borderRadius: '10px' },
   // Table view
@@ -400,4 +428,7 @@ const styles = {
   productCell: { display: 'flex', alignItems: 'center', gap: '10px' },
   thumbImg: { width: '36px', height: '36px', objectFit: 'cover', borderRadius: '6px' },
   stockBadge: { fontSize: '12px', fontWeight: '700', padding: '3px 10px', borderRadius: '10px' },
+  btnSellTable: { padding: '7px 14px', background: '#1e8449', color: '#fff', border: 'none', borderRadius: '7px', cursor: 'pointer', fontWeight: '700', fontSize: '12px', whiteSpace: 'nowrap' },
+  btnIconTable: { width: '32px', height: '32px', borderRadius: '7px', border: '1.5px solid #e0e0e0', background: '#fafafa', color: '#555', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  btnIconTableDanger: { border: '1.5px solid #fde8e8', background: '#fde8e8', color: '#e74c3c' },
 };

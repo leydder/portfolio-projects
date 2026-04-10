@@ -29,6 +29,9 @@ public class Sale {
     private BigDecimal remainingBalance;
     private String sellerName;
 
+    private boolean deleted = false;
+    private LocalDateTime deletedAt;
+
     @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SaleItem> items;
 

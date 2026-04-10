@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import api from '../api/axios';
 
+
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
 function parseFechaLocal(fechaStr) {
@@ -46,9 +47,19 @@ export default function HistorialPage() {
   const [sales, setSales] = useState([]);
   const [selectedKey, setSelectedKey] = useState(null);
 
-  useEffect(() => {
-    api.get('/api/sales').then(res => setSales(res.data));
-  }, []);
+  const loadSales = () => api.get('/api/sales').then(res => setSales(res.data));
+
+  useEffect(() => { loadSales(); }, []);
+
+  const handleDeleteSale = async (id) => {
+    if (!confirm('¿Eliminar esta venta? El stock de los productos será restaurado.')) return;
+    try {
+      await api.delete(`/api/sales/${id}`);
+      loadSales();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Error al eliminar la venta');
+    }
+  };
 
   const grupos = agruparPorMes(sales);
   const selectedGrupo = grupos.find(g => g.key === selectedKey);
@@ -200,6 +211,7 @@ export default function HistorialPage() {
                         <tr>
                           <th style={styles.th}>Fecha</th>
                           <th style={styles.th}>Venta #</th>
+                          <th style={styles.th}>Acción</th>
                           <th style={styles.th}>Vendedor</th>
                           <th style={styles.th}>Producto</th>
                           <th style={styles.th}>Talla</th>
@@ -224,6 +236,15 @@ export default function HistorialPage() {
                               {idx === 0 && (
                                 <td style={styles.td} rowSpan={sale.items.length}>
                                   <span style={styles.saleIdBadge}>#{sale.id}</span>
+                                </td>
+                              )}
+                              {idx === 0 && (
+                                <td style={{ ...styles.td, textAlign: 'center' }} rowSpan={sale.items.length}>
+                                  <button
+                                    style={styles.btnDeleteSale}
+                                    title="Eliminar venta"
+                                    onClick={() => handleDeleteSale(sale.id)}
+                                  >🗑</button>
                                 </td>
                               )}
                               {idx === 0 && (
@@ -359,4 +380,5 @@ const styles = {
   paidBadge: { background: '#e8f5e9', color: '#2e7d32', fontSize: '12px', fontWeight: '700', padding: '3px 8px', borderRadius: '10px' },
   cuotaBadge: { background: '#e8f5e9', color: '#27ae60', fontSize: '12px', fontWeight: '700', padding: '3px 8px', borderRadius: '10px' },
   sellerBadge: { fontSize: '12px', fontWeight: '600', color: '#7d4255', background: '#fce4de', padding: '2px 8px', borderRadius: '10px' },
+  btnDeleteSale: { width: '30px', height: '30px', border: '1.5px solid #fde8e8', background: '#fde8e8', color: '#e74c3c', borderRadius: '7px', cursor: 'pointer', fontSize: '13px' },
 };

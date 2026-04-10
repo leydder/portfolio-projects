@@ -7,6 +7,7 @@ import bella_boutique.bella.exception.ResourceNotFoundException;
 import bella_boutique.bella.model.Product;
 import bella_boutique.bella.repository.ProductRepository;
 import bella_boutique.bella.repository.ProductSizeRepository;
+import bella_boutique.bella.repository.SaleItemRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,6 +30,9 @@ class ProductServiceImplTest {
 
     @Mock
     private ProductSizeRepository productSizeRepository;
+
+    @Mock
+    private SaleItemRepository saleItemRepository;
 
     @InjectMocks
     private ProductServiceImpl productService;
@@ -119,10 +123,13 @@ class ProductServiceImplTest {
     }
 
     @Test
-    void delete_productoConVentas_lanzaInvalidRequestException() {
+    void delete_productoConVentas_eliminaSinExcepcion() {
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-        when(productRepository.existsProductInSales(1L)).thenReturn(true);
+        when(productSizeRepository.findByProductId(1L)).thenReturn(List.of());
 
-        assertThrows(InvalidRequestException.class, () -> productService.delete(1L));
+        assertDoesNotThrow(() -> productService.delete(1L));
+
+        verify(saleItemRepository).deleteByProductId(1L);
+        verify(productRepository).delete(product);
     }
 }
