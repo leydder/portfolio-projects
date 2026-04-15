@@ -24,10 +24,10 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        if (!userRepository.existsByUsername("admin")) {
+        if (!userRepository.existsByUsername("darsy roa")) {
             User admin = new User();
-            admin.setUsername("admin");
-            admin.setPassword(passwordEncoder.encode("admin123"));
+            admin.setUsername("darsy roa");
+            admin.setPassword(passwordEncoder.encode("Isabella2023"));
             admin.setRole(Role.ADMIN);
             userRepository.save(admin);
             log.info("Usuario admin creado con credenciales por defecto");
