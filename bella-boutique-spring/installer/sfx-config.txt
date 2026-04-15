@@ -1,0 +1,5 @@
+;!@Install@!UTF-8!
+Title="Bella Boutique"
+BeginPrompt="¿Desea instalar Bella Boutique?\n\nSeleccione la carpeta donde se instalará la aplicación."
+RunProgram="setup.bat"
+;!@InstallEnd@!
