@@ -34,3 +34,6 @@ build/
 
 ### Base de datos local (H2) ###
 data/
+
+### Secretos locales ###
+src/main/resources/application-secrets.properties
