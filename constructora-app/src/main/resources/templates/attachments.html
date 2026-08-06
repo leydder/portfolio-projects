@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Adjuntos</title>
+</head>
+<body>
+    <h1>Adjuntos</h1>
+
+    <table border="1" cellpadding="5">
+        <tr>
+            <th>ID</th>
+            <th>Proyecto</th>
+            <th>Nombre archivo</th>
+            <th>Tipo</th>
+            <th>Ruta</th>
+            <th>Subido</th>
+        </tr>
+        <tr th:each="a : ${attachments}">
+            <td th:text="${a.id}"></td>
+            <td th:text="${a.project != null ? a.project.name : ''}"></td>
+            <td th:text="${a.fileName}"></td>
+            <td th:text="${a.fileType}"></td>
+            <td th:text="${a.filePath}"></td>
+            <td th:text="${a.uploadedAt}"></td>
+        </tr>
+    </table>
+
+    <h2>Registrar adjunto</h2>
+    <form th:action="@{/attachments}" th:object="${attachment}" method="post">
+        <label>Proyecto:
+            <select th:field="*{project.id}">
+                <option th:each="p : ${projects}" th:value="${p.id}" th:text="${p.name}"></option>
+            </select>
+        </label><br>
+        <label>Nombre archivo: <input type="text" th:field="*{fileName}"></label><br>
+        <label>Tipo:
+            <select th:field="*{fileType}">
+                <option th:each="t : ${T(com.legp.constructora.model.AttachmentType).values()}"
+                        th:value="${t}" th:text="${t}"></option>
+            </select>
+        </label><br>
+        <label>Ruta archivo: <input type="text" th:field="*{filePath}"></label><br>
+        <button type="submit">Registrar</button>
+    </form>
+</body>
+</html>

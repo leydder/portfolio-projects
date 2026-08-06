@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Clientes</title>
+</head>
+<body>
+    <h1>Clientes</h1>
+
+    <table border="1" cellpadding="5">
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Tipo doc.</th>
+            <th>Nro. documento</th>
+            <th>Email</th>
+            <th>Teléfono</th>
+            <th>Dirección</th>
+            <th>Creado</th>
+        </tr>
+        <tr th:each="c : ${clients}">
+            <td th:text="${c.id}"></td>
+            <td th:text="${c.name}"></td>
+            <td th:text="${c.documentType}"></td>
+            <td th:text="${c.documentNumber}"></td>
+            <td th:text="${c.email}"></td>
+            <td th:text="${c.phone}"></td>
+            <td th:text="${c.address}"></td>
+            <td th:text="${c.createdAt}"></td>
+        </tr>
+    </table>
+
+    <h2>Crear cliente</h2>
+    <form th:action="@{/clients}" th:object="${client}" method="post">
+        <label>Nombre: <input type="text" th:field="*{name}"></label><br>
+        <label>Tipo documento:
+            <select th:field="*{documentType}">
+                <option th:each="dt : ${T(com.legp.constructora.model.DocumentType).values()}"
+                        th:value="${dt}" th:text="${dt}"></option>
+            </select>
+        </label><br>
+        <label>Nro. documento: <input type="text" th:field="*{documentNumber}"></label><br>
+        <label>Email: <input type="email" th:field="*{email}"></label><br>
+        <label>Teléfono: <input type="text" th:field="*{phone}"></label><br>
+        <label>Dirección: <input type="text" th:field="*{address}"></label><br>
+        <button type="submit">Crear</button>
+    </form>
+</body>
+</html>

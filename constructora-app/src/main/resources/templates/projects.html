@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Proyectos</title>
+</head>
+<body>
+    <h1>Proyectos</h1>
+
+    <table border="1" cellpadding="5">
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th>Cliente</th>
+            <th>Estado</th>
+            <th>Inicio</th>
+            <th>Fin</th>
+            <th>Ubicación</th>
+            <th>Creado</th>
+        </tr>
+        <tr th:each="p : ${projects}">
+            <td th:text="${p.id}"></td>
+            <td th:text="${p.name}"></td>
+            <td th:text="${p.description}"></td>
+            <td th:text="${p.client != null ? p.client.name : ''}"></td>
+            <td th:text="${p.status}"></td>
+            <td th:text="${p.startDate}"></td>
+            <td th:text="${p.endDate}"></td>
+            <td th:text="${p.location}"></td>
+            <td th:text="${p.createdAt}"></td>
+        </tr>
+    </table>
+
+    <h2>Crear proyecto</h2>
+    <form th:action="@{/projects}" th:object="${project}" method="post">
+        <label>Nombre: <input type="text" th:field="*{name}"></label><br>
+        <label>Descripción: <input type="text" th:field="*{description}"></label><br>
+        <label>Cliente:
+            <select th:field="*{client.id}">
+                <option th:each="c : ${clients}" th:value="${c.id}" th:text="${c.name}"></option>
+            </select>
+        </label><br>
+        <label>Estado:
+            <select th:field="*{status}">
+                <option th:each="s : ${T(com.legp.constructora.model.ProjectStatus).values()}"
+                        th:value="${s}" th:text="${s}"></option>
+            </select>
+        </label><br>
+        <label>Fecha inicio: <input type="date" th:field="*{startDate}"></label><br>
+        <label>Fecha fin: <input type="date" th:field="*{endDate}"></label><br>
+        <label>Ubicación: <input type="text" th:field="*{location}"></label><br>
+        <button type="submit">Crear</button>
+    </form>
+</body>
+</html>

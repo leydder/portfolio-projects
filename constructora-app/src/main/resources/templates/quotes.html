@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Presupuestos</title>
+</head>
+<body>
+    <h1>Presupuestos</h1>
+
+    <table border="1" cellpadding="5">
+        <tr>
+            <th>ID</th>
+            <th>Proyecto</th>
+            <th>Nro.</th>
+            <th>Fecha</th>
+            <th>Admin %</th>
+            <th>Imprevistos %</th>
+            <th>Utilidad %</th>
+            <th>Subtotal</th>
+            <th>AIU</th>
+            <th>Total</th>
+            <th>Estado</th>
+        </tr>
+        <tr th:each="q : ${quotes}">
+            <td th:text="${q.id}"></td>
+            <td th:text="${q.project != null ? q.project.name : ''}"></td>
+            <td th:text="${q.quoteNumber}"></td>
+            <td th:text="${q.date}"></td>
+            <td th:text="${q.administrationPercent}"></td>
+            <td th:text="${q.unforeseenPercent}"></td>
+            <td th:text="${q.utilityPercent}"></td>
+            <td th:text="${q.subtotal}"></td>
+            <td th:text="${q.aiuAmount}"></td>
+            <td th:text="${q.total}"></td>
+            <td th:text="${q.status}"></td>
+        </tr>
+    </table>
+
+    <h2>Crear presupuesto</h2>
+    <form th:action="@{/quotes}" th:object="${quote}" method="post">
+        <label>Proyecto:
+            <select th:field="*{project.id}">
+                <option th:each="p : ${projects}" th:value="${p.id}" th:text="${p.name}"></option>
+            </select>
+        </label><br>
+        <label>Nro. presupuesto: <input type="text" th:field="*{quoteNumber}"></label><br>
+        <label>Fecha: <input type="date" th:field="*{date}"></label><br>
+        <label>Administración %: <input type="number" step="0.01" th:field="*{administrationPercent}"></label><br>
+        <label>Imprevistos %: <input type="number" step="0.01" th:field="*{unforeseenPercent}"></label><br>
+        <label>Utilidad %: <input type="number" step="0.01" th:field="*{utilityPercent}"></label><br>
+        <label>Estado:
+            <select th:field="*{status}">
+                <option th:each="s : ${T(com.legp.constructora.model.QuoteStatus).values()}"
+                        th:value="${s}" th:text="${s}"></option>
+            </select>
+        </label><br>
+        <button type="submit">Crear</button>
+    </form>
+
+    <p>Para agregar items a un presupuesto, ve a <a th:href="@{/quote-items}">/quote-items</a>.</p>
+</body>
+</html>

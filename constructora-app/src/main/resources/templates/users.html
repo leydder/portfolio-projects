@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Usuarios</title>
+</head>
+<body>
+    <h1>Usuarios</h1>
+
+    <table border="1" cellpadding="5">
+        <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Password</th>
+        </tr>
+        <tr th:each="u : ${users}">
+            <td th:text="${u.id}"></td>
+            <td th:text="${u.username}"></td>
+            <td th:text="${u.password}"></td>
+        </tr>
+    </table>
+
+    <h2>Crear usuario</h2>
+    <form th:action="@{/users}" th:object="${user}" method="post">
+        <label>Username: <input type="text" th:field="*{username}"></label><br>
+        <label>Password: <input type="text" th:field="*{password}"></label><br>
+        <button type="submit">Crear</button>
+    </form>
+</body>
+</html>

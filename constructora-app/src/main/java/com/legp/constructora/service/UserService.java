@@ -26,4 +26,20 @@ public class UserService {
         return userRepository.findById(id);
     }
 
+    public Optional<User> updateUser(Long id, User userDetails) {
+        return userRepository.findById(id).map(user -> {
+            user.setUsername(userDetails.getUsername());
+            user.setPassword(userDetails.getPassword());
+            return userRepository.save(user);
+        });
+    }
+
+    public boolean deleteUser(Long id) {
+        if (!userRepository.existsById(id)) {
+            return false;
+        }
+        userRepository.deleteById(id);
+        return true;
+    }
+
 }

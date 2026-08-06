@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Items de Presupuesto</title>
+</head>
+<body>
+    <h1>Items de Presupuesto</h1>
+
+    <table border="1" cellpadding="5">
+        <tr>
+            <th>ID</th>
+            <th>Quote ID</th>
+            <th>Descripción</th>
+            <th>Unidad</th>
+            <th>Cantidad</th>
+            <th>Precio unitario</th>
+            <th>Subtotal</th>
+        </tr>
+        <tr th:each="i : ${items}">
+            <td th:text="${i.id}"></td>
+            <td th:text="${i.quoteId}"></td>
+            <td th:text="${i.description}"></td>
+            <td th:text="${i.unit}"></td>
+            <td th:text="${i.quantity}"></td>
+            <td th:text="${i.unitPrice}"></td>
+            <td th:text="${i.subtotal}"></td>
+        </tr>
+    </table>
+
+    <h2>Agregar item</h2>
+    <form th:action="@{/quote-items}" th:object="${item}" method="post">
+        <label>Presupuesto:
+            <select th:field="*{quote.id}">
+                <option th:each="q : ${quotes}" th:value="${q.id}" th:text="${q.quoteNumber}"></option>
+            </select>
+        </label><br>
+        <label>Descripción: <input type="text" th:field="*{description}"></label><br>
+        <label>Unidad: <input type="text" th:field="*{unit}"></label><br>
+        <label>Cantidad: <input type="number" step="0.01" th:field="*{quantity}"></label><br>
+        <label>Precio unitario: <input type="number" step="0.01" th:field="*{unitPrice}"></label><br>
+        <button type="submit">Agregar</button>
+    </form>
+
+    <p>Volver a <a th:href="@{/quotes}">/quotes</a>.</p>
+</body>
+</html>
