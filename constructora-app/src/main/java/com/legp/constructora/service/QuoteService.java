@@ -65,9 +65,13 @@ public class QuoteService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
                 .setScale(2, RoundingMode.HALF_UP);
 
-        BigDecimal aiuPercent = quote.getAdministrationPercent()
-                .add(quote.getUnforeseenPercent())
-                .add(quote.getUtilityPercent());
+        BigDecimal administrationPercent = quote.getAdministrationPercent() != null ? quote.getAdministrationPercent() : BigDecimal.ZERO;
+        BigDecimal unforeseenPercent = quote.getUnforeseenPercent() != null ? quote.getUnforeseenPercent() : BigDecimal.ZERO;
+        BigDecimal utilityPercent = quote.getUtilityPercent() != null ? quote.getUtilityPercent() : BigDecimal.ZERO;
+
+        BigDecimal aiuPercent = administrationPercent
+                .add(unforeseenPercent)
+                .add(utilityPercent);
 
         BigDecimal aiuAmount = subtotal.multiply(aiuPercent)
                 .divide(BigDecimal.valueOf(100))

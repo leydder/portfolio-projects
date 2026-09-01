@@ -58,6 +58,9 @@ public class QuoteItemService {
     }
 
     private BigDecimal calculateSubtotal(QuoteItem item) {
+        if (item.getQuantity() == null || item.getUnitPrice() == null) {
+            throw new IllegalArgumentException("quantity y unitPrice son obligatorios");
+        }
         return item.getQuantity().multiply(item.getUnitPrice()).setScale(2, RoundingMode.HALF_UP);
     }
 
