@@ -6,6 +6,7 @@ import ClientsPage from './pages/ClientsPage';
 import ProjectsPage from './pages/ProjectsPage';
 import QuotesPage from './pages/QuotesPage';
 import AttachmentsPage from './pages/AttachmentsPage';
+import ReportsPage from './pages/ReportsPage';
 import Navbar from './components/Navbar';
 
 function ProtectedRoute({ children }) {
@@ -33,6 +34,7 @@ function AppRoutes() {
       <Route path="/projects" element={<ProtectedRoute><Layout><ProjectsPage /></Layout></ProtectedRoute>} />
       <Route path="/quotes" element={<ProtectedRoute><Layout><QuotesPage /></Layout></ProtectedRoute>} />
       <Route path="/attachments" element={<ProtectedRoute><Layout><AttachmentsPage /></Layout></ProtectedRoute>} />
+      <Route path="/reports" element={<ProtectedRoute><Layout><ReportsPage /></Layout></ProtectedRoute>} />
       <Route path="*" element={<Navigate to={user ? '/users' : '/login'} />} />
     </Routes>
   );

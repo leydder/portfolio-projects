@@ -19,6 +19,7 @@ export default function Navbar() {
         <Link to="/projects" style={styles.link}>Proyectos</Link>
         <Link to="/quotes" style={styles.link}>Presupuestos</Link>
         <Link to="/attachments" style={styles.link}>Adjuntos</Link>
+        <Link to="/reports" style={styles.link}>Reportes</Link>
       </div>
       <div style={styles.userSection}>
         <span style={styles.username}>{user?.username}</span>
